@@ -8,7 +8,7 @@ const {
   likeUnlikePost,
   getPostById
 } = require('../controllers/postController');
-const { addComment, deleteComment } = require('../controllers/commentController');
+const { addComment, deleteComment, likeUnlikeComment } = require('../controllers/commentController');
 const auth = require('../middlewares/auth');
 
 router.post('/', auth, createPost);
@@ -19,5 +19,6 @@ router.delete('/:id', auth, deletePost);
 router.post('/:id/like', auth, likeUnlikePost);
 router.post('/:postId/comment', auth, addComment);
 router.delete('/:postId/comment/:commentId', auth, deleteComment);
+router.post('/:postId/comment/:commentId/like', auth, likeUnlikeComment);
 
 module.exports = router;

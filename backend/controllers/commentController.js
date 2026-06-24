@@ -28,7 +28,7 @@ const addComment = async (req, res) => {
       await notification.save();
     }
 
-    const populatedComment = await Comment.findById(newComment._id).populate('user', 'username profilePicture');
+    const populatedComment = await Comment.findById(newComment._id).populate('user', 'username profilePicture isVerified');
     res.status(201).json(populatedComment);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -58,7 +58,26 @@ const deleteComment = async (req, res) => {
   }
 };
 
+const likeUnlikeComment = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    if (comment.likes.includes(req.user.id)) {
+      comment.likes = comment.likes.filter(id => id.toString() !== req.user.id);
+    } else {
+      comment.likes.push(req.user.id);
+    }
+    await comment.save();
+    res.status(200).json(comment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   addComment,
-  deleteComment
+  deleteComment,
+  likeUnlikeComment
 };
