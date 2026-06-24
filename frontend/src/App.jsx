@@ -11,6 +11,8 @@ const Navbar = () => {
   const { user, logoutUser } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     const delaySearch = setTimeout(async () => {
@@ -29,10 +31,40 @@ const Navbar = () => {
     return () => clearTimeout(delaySearch);
   }, [searchQuery]);
 
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const res = await API.get('/notifications');
+      setNotifications(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const handleSelectUser = () => {
     setSearchQuery('');
     setSearchResults([]);
   };
+
+  const handleToggleNotifications = async () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications && notifications.some(n => !n.read)) {
+      try {
+        await API.put('/notifications/read');
+        fetchNotifications();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <nav className="navbar">
@@ -63,10 +95,34 @@ const Navbar = () => {
         )}
       </div>
 
-      <div className="navbar-links">
+      <div className="navbar-links" style={{ position: 'relative' }}>
         <Link to="/">Home</Link>
         {user ? (
           <>
+            <button onClick={handleToggleNotifications} style={{ position: 'relative' }}>
+              Notifications
+              {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+            </button>
+            {showNotifications && (
+              <div className="notification-dropdown">
+                {notifications.map((n) => (
+                  <div key={n._id} className={`notification-item ${!n.read ? 'unread' : ''}`}>
+                    <div className="notification-avatar"></div>
+                    <div>
+                      <strong>{n.sender.username}</strong>{' '}
+                      {n.type === 'like' && 'liked your post'}
+                      {n.type === 'comment' && 'commented on your post'}
+                      {n.type === 'follow' && 'started following you'}
+                    </div>
+                  </div>
+                ))}
+                {notifications.length === 0 && (
+                  <div style={{ padding: '15px', fontSize: '12px', color: '#8e8e8e', textAlign: 'center' }}>
+                    No notifications yet
+                  </div>
+                )}
+              </div>
+            )}
             <Link to={`/profile/${user.id}`}>Profile</Link>
             <button onClick={logoutUser}>Log Out</button>
           </>

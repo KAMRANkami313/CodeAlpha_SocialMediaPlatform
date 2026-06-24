@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -111,6 +112,14 @@ const followUser = async (req, res) => {
     targetUser.followers.push(req.user.id);
     await currentUser.save();
     await targetUser.save();
+
+    const notification = new Notification({
+      sender: req.user.id,
+      receiver: req.params.id,
+      type: 'follow'
+    });
+    await notification.save();
+
     res.status(200).json({ message: 'User followed successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });

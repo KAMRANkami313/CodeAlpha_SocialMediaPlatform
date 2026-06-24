@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const Notification = require('../models/Notification');
 
 const createPost = async (req, res) => {
   try {
@@ -83,6 +84,15 @@ const likeUnlikePost = async (req, res) => {
       post.likes = post.likes.filter(id => id.toString() !== req.user.id);
     } else {
       post.likes.push(req.user.id);
+      if (post.user.toString() !== req.user.id) {
+        const notification = new Notification({
+          sender: req.user.id,
+          receiver: post.user,
+          type: 'like',
+          post: post._id
+        });
+        await notification.save();
+      }
     }
     await post.save();
     res.status(200).json(post);

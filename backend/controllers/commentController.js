@@ -1,5 +1,6 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
+const Notification = require('../models/Notification');
 
 const addComment = async (req, res) => {
   try {
@@ -16,6 +17,17 @@ const addComment = async (req, res) => {
     await newComment.save();
     post.comments.push(newComment._id);
     await post.save();
+
+    if (post.user.toString() !== req.user.id) {
+      const notification = new Notification({
+        sender: req.user.id,
+        receiver: post.user,
+        type: 'comment',
+        post: post._id
+      });
+      await notification.save();
+    }
+
     const populatedComment = await Comment.findById(newComment._id).populate('user', 'username profilePicture');
     res.status(201).json(populatedComment);
   } catch (error) {
