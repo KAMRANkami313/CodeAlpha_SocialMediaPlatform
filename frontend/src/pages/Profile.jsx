@@ -19,6 +19,8 @@ const Profile = () => {
   const [error, setError] = useState('');
 
   const [activeLikers, setActiveLikers] = useState(null);
+  const [userListModal, setUserListModal] = useState(null);
+  const [userListTitle, setUserListTitle] = useState('');
 
   const fetchProfile = async () => {
     try {
@@ -39,6 +41,7 @@ const Profile = () => {
   useEffect(() => {
     fetchProfile();
     setActiveTab('posts');
+    setUserListModal(null);
   }, [id]);
 
   const handleFollowUnfollow = async () => {
@@ -90,6 +93,12 @@ const Profile = () => {
     navigate('/messages', { state: { startChatWith: profile } });
   };
 
+  const handleOpenUserList = (list, title) => {
+    if (list.length === 0) return;
+    setUserListModal(list);
+    setUserListTitle(title);
+  };
+
   if (!profile) return <div className="container">Loading profile...</div>;
 
   const isMe = user?.id === profile._id;
@@ -126,8 +135,18 @@ const Profile = () => {
           </h2>
           <div className="profile-stats">
             <span><strong>{posts.length}</strong> posts</span>
-            <span><strong>{profile.followers.length}</strong> followers</span>
-            <span><strong>{profile.following.length}</strong> following</span>
+            <span
+              className={profile.followers.length > 0 ? 'likes-trigger' : ''}
+              onClick={() => handleOpenUserList(profile.followers, 'Followers')}
+            >
+              <strong>{profile.followers.length}</strong> followers
+            </span>
+            <span
+              className={profile.following.length > 0 ? 'likes-trigger' : ''}
+              onClick={() => handleOpenUserList(profile.following, 'Following')}
+            >
+              <strong>{profile.following.length}</strong> following
+            </span>
           </div>
           {editing ? (
             <form onSubmit={handleUpdateProfile}>
@@ -271,6 +290,44 @@ const Profile = () => {
               {activeLikers.length === 0 && (
                 <div style={{ textAlign: 'center', color: '#8e8e8e', fontSize: '14px' }}>No likes yet</div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {userListModal && (
+        <div className="modal-overlay" onClick={() => setUserListModal(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <span>{userListTitle}</span>
+              <button className="modal-close-btn" onClick={() => setUserListModal(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              {userListModal.map((member) => (
+                <div key={member._id} className="suggestion-item" style={{ marginBottom: '15px' }}>
+                  <div className="suggestion-info">
+                    {member.profilePicture ? (
+                      <img
+                        src={member.profilePicture}
+                        alt="Avatar"
+                        className="suggestion-avatar"
+                        style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div className="suggestion-avatar" style={{ width: '32px', height: '32px' }}></div>
+                    )}
+                    <Link
+                      to={`/profile/${member._id}`}
+                      className="suggestion-username"
+                      style={{ display: 'flex', alignItems: 'center' }}
+                      onClick={() => setUserListModal(null)}
+                    >
+                      {member.username}
+                      {member.isVerified && <span className="verified-badge">✓</span>}
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
