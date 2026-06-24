@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './context/AuthContext';
+import { ThemeContext, ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Feed from './pages/Feed';
@@ -11,6 +12,7 @@ import API from './services/api';
 
 const Navbar = () => {
   const { user, logoutUser } = useContext(AuthContext);
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [notifications, setNotifications] = useState([]);
@@ -146,10 +148,16 @@ const Navbar = () => {
               </div>
             )}
             <Link to={`/profile/${user.id}`}>Profile</Link>
+            <button onClick={toggleTheme} style={{ fontSize: '16px' }}>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
             <button onClick={logoutUser}>Log Out</button>
           </>
         ) : (
           <>
+            <button onClick={toggleTheme} style={{ fontSize: '16px' }}>
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>
           </>
@@ -177,9 +185,11 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
