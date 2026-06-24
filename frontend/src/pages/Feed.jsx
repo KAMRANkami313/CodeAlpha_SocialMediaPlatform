@@ -1,18 +1,21 @@
 import { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
 const Feed = () => {
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTag = searchParams.get('tag');
 
   const fetchPosts = async () => {
     try {
-      const response = await API.get('/posts');
+      const endpoint = currentTag ? `/posts?tag=${currentTag}` : '/posts';
+      const response = await API.get(endpoint);
       setPosts(response.data);
     } catch (error) {
       console.error(error);
@@ -21,7 +24,7 @@ const Feed = () => {
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [currentTag]);
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
@@ -44,6 +47,19 @@ const Feed = () => {
     }
   };
 
+  const handleSave = async (postId) => {
+    try {
+      const response = await API.post(`/users/save/${postId}`);
+      const updatedSavedPosts = response.data.savedPosts;
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      storedUser.savedPosts = updatedSavedPosts;
+      localStorage.setItem('user', JSON.stringify(storedUser));
+      setUser(storedUser);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleCommentSubmit = async (e, postId) => {
     e.preventDefault();
     const content = commentInputs[postId];
@@ -61,16 +77,44 @@ const Feed = () => {
     setCommentInputs({ ...commentInputs, [postId]: value });
   };
 
+  const renderCaption = (text) => {
+    const parts = text.split(/(\s+)/);
+    return parts.map((part, index) => {
+      if (part.startsWith('#') && part.length > 1) {
+        const cleanTag = part.slice(1).replace(/[^\w]/g, '');
+        return (
+          <span
+            key={index}
+            className="hashtag"
+            onClick={() => setSearchParams({ tag: cleanTag })}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <div className="container">
-      {user && (
+      {currentTag && (
+        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2>Showing posts for #{currentTag}</h2>
+          <button className="btn" style={{ width: 'auto', padding: '5px 15px' }} onClick={() => setSearchParams({})}>
+            Clear Filter
+          </button>
+        </div>
+      )}
+
+      {user && !currentTag && (
         <div className="auth-card" style={{ marginBottom: '30px', textAlign: 'left' }}>
           <h3>Create Post</h3>
           <form onSubmit={handleCreatePost}>
             <div className="form-group">
               <textarea
                 rows="3"
-                placeholder="What's on your mind?"
+                placeholder="What's on your mind? Use #tags!"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 required
@@ -96,15 +140,26 @@ const Feed = () => {
             <Link to={`/profile/${post.user._id}`}>{post.user.username}</Link>
           </div>
           {post.image && <img src={post.image} alt="Post content" className="post-image" />}
-          <div className="post-actions">
-            <button className="like-btn" onClick={() => handleLike(post._id)}>
-              {post.likes.includes(user?.id) ? '❤️' : '🤍'}
-            </button>
-            <span>{post.likes.length} likes</span>
+          <div className="post-actions" style={{ justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button className="like-btn" onClick={() => handleLike(post._id)}>
+                {post.likes.includes(user?.id) ? '❤️' : '🤍'}
+              </button>
+              <span>{post.likes.length} likes</span>
+            </div>
+            {user && (
+              <button
+                className="like-btn"
+                onClick={() => handleSave(post._id)}
+                style={{ marginRight: 0 }}
+              >
+                {user.savedPosts?.includes(post._id) ? '🔖' : '📁'}
+              </button>
+            )}
           </div>
           <div className="post-content">
             <p>
-              <strong>{post.user.username}</strong> {post.caption}
+              <strong>{post.user.username}</strong> {renderCaption(post.caption)}
             </p>
           </div>
           <div className="comment-section">

@@ -10,6 +10,7 @@ const Profile = () => {
   const [posts, setPosts] = useState([]);
   const [bioInput, setBioInput] = useState('');
   const [editing, setEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('posts');
 
   const fetchProfile = async () => {
     try {
@@ -25,6 +26,7 @@ const Profile = () => {
 
   useEffect(() => {
     fetchProfile();
+    setActiveTab('posts');
   }, [id]);
 
   const handleFollowUnfollow = async () => {
@@ -56,6 +58,7 @@ const Profile = () => {
 
   const isMe = user?.id === profile._id;
   const isFollowing = profile.followers.some(f => f._id === user?.id);
+  const displayedPosts = activeTab === 'posts' ? posts : profile.savedPosts;
 
   return (
     <div className="container">
@@ -97,9 +100,29 @@ const Profile = () => {
         </div>
       </div>
 
-      <h3>Posts</h3>
-      {posts.map((post) => (
+      {isMe && (
+        <div className="profile-tabs">
+          <button
+            className={`profile-tab ${activeTab === 'posts' ? 'active' : ''}`}
+            onClick={() => setActiveTab('posts')}
+          >
+            My Posts
+          </button>
+          <button
+            className={`profile-tab ${activeTab === 'saved' ? 'active' : ''}`}
+            onClick={() => setActiveTab('saved')}
+          >
+            Saved Posts
+          </button>
+        </div>
+      )}
+
+      {displayedPosts.map((post) => (
         <div className="post-card" key={post._id}>
+          <div className="post-header">
+            <div className="post-avatar"></div>
+            <strong>{post.user.username}</strong>
+          </div>
           {post.image && <img src={post.image} alt="Post content" className="post-image" />}
           <div className="post-content">
             <p>{post.caption}</p>

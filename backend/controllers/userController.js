@@ -63,7 +63,14 @@ const getProfile = async (req, res) => {
     const user = await User.findById(req.params.id)
       .select('-password')
       .populate('followers', 'username profilePicture')
-      .populate('following', 'username profilePicture');
+      .populate('following', 'username profilePicture')
+      .populate({
+        path: 'savedPosts',
+        populate: {
+          path: 'user',
+          select: 'username profilePicture'
+        }
+      });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -133,11 +140,45 @@ const unfollowUser = async (req, res) => {
   }
 };
 
+const saveUnsavePost = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (user.savedPosts.includes(req.params.postId)) {
+      user.savedPosts = user.savedPosts.filter(id => id.toString() !== req.params.postId);
+      await user.save();
+      return res.status(200).json({ message: 'Post unsaved successfully', savedPosts: user.savedPosts });
+    } else {
+      user.savedPosts.push(req.params.postId);
+      await user.save();
+      return res.status(200).json({ message: 'Post saved successfully', savedPosts: user.savedPosts });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const searchUsers = async (req, res) => {
+  try {
+    const query = req.query.q;
+    if (!query) {
+      return res.status(200).json([]);
+    }
+    const users = await User.find({
+      username: { $regex: query, $options: 'i' }
+    }).select('username profilePicture bio');
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
   getProfile,
   updateProfile,
   followUser,
-  unfollowUser
+  unfollowUser,
+  saveUnsavePost,
+  searchUsers
 };

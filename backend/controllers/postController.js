@@ -18,7 +18,12 @@ const createPost = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find()
+    const { tag } = req.query;
+    let filter = {};
+    if (tag) {
+      filter = { caption: { $regex: `#${tag}`, $options: 'i' } };
+    }
+    const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .populate('user', 'username profilePicture')
       .populate({

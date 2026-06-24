@@ -210,3 +210,80 @@ body {
 .profile-bio {
   font-size: 15px;
 }
+
+.search-container {
+  position: relative;
+}
+
+.search-input {
+  padding: 6px 12px;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 180px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 35px;
+  left: 0;
+  width: 220px;
+  background-color: #ffffff;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  text-decoration: none;
+  color: #262626;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-item:hover {
+  background-color: #fafafa;
+}
+
+.search-item-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #dbdbdb;
+  margin-right: 10px;
+}
+
+.hashtag {
+  color: #00376b;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.profile-tabs {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid #dbdbdb;
+  margin-bottom: 20px;
+}
+
+.profile-tab {
+  background: none;
+  border: none;
+  padding: 15px 30px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #8e8e8e;
+  cursor: pointer;
+  border-top: 1px solid transparent;
+  margin-top: -1px;
+}
+
+.profile-tab.active {
+  color: #262626;
+  border-top: 1px solid #262626;
+}
