@@ -27,6 +27,7 @@ const getAllPosts = async (req, res) => {
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .populate('user', 'username profilePicture')
+      .populate('likes', 'username profilePicture')
       .populate({
         path: 'comments',
         populate: {
@@ -45,6 +46,7 @@ const getUserPosts = async (req, res) => {
     const posts = await Post.find({ user: req.params.userId })
       .sort({ createdAt: -1 })
       .populate('user', 'username profilePicture')
+      .populate('likes', 'username profilePicture')
       .populate({
         path: 'comments',
         populate: {

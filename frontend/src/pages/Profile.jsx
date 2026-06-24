@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
@@ -13,6 +13,8 @@ const Profile = () => {
   const [profilePicInput, setProfilePicInput] = useState('');
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
+
+  const [activeLikers, setActiveLikers] = useState(null);
 
   const fetchProfile = async () => {
     try {
@@ -163,11 +165,55 @@ const Profile = () => {
             <strong>{post.user.username}</strong>
           </div>
           {post.image && <img src={post.image} alt="Post content" className="post-image" />}
+          <div className="post-actions" style={{ padding: '15px 15px 0 15px' }}>
+            <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
+              {post.likes.length} likes
+            </span>
+          </div>
           <div className="post-content">
             <p>{post.caption}</p>
           </div>
         </div>
       ))}
+
+      {activeLikers && (
+        <div className="modal-overlay" onClick={() => setActiveLikers(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <span>Likes</span>
+              <button className="modal-close-btn" onClick={() => setActiveLikers(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              {activeLikers.map((liker) => (
+                <div key={liker._id} className="suggestion-item" style={{ marginBottom: '15px' }}>
+                  <div className="suggestion-info">
+                    {liker.profilePicture ? (
+                      <img
+                        src={liker.profilePicture}
+                        alt="Avatar"
+                        className="suggestion-avatar"
+                        style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div className="suggestion-avatar" style={{ width: '32px', height: '32px' }}></div>
+                    )}
+                    <Link
+                      to={`/profile/${liker._id}`}
+                      className="suggestion-username"
+                      onClick={() => setActiveLikers(null)}
+                    >
+                      {liker.username}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+              {activeLikers.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#8e8e8e', fontSize: '14px' }}>No likes yet</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
