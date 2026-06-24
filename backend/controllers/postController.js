@@ -103,10 +103,32 @@ const likeUnlikePost = async (req, res) => {
   }
 };
 
+const getPostById = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .populate('user', 'username profilePicture')
+      .populate('likes', 'username profilePicture')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'username profilePicture'
+        }
+      });
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createPost,
   getAllPosts,
   getUserPosts,
   deletePost,
-  likeUnlikePost
+  likeUnlikePost,
+  getPostById
 };

@@ -608,3 +608,30 @@ body {
 .likes-trigger:hover {
   text-decoration: underline;
 }
+
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 12px 24px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 11000;
+  font-size: 14px;
+  font-weight: bold;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

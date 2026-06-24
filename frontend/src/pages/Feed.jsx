@@ -12,14 +12,28 @@ const Feed = () => {
   const [commentInputs, setCommentInputs] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTag = searchParams.get('tag');
+  const targetPostId = searchParams.get('postId');
 
   const [activeLikers, setActiveLikers] = useState(null);
+  const [toast, setToast] = useState('');
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => {
+      setToast('');
+    }, 3000);
+  };
 
   const fetchPosts = async () => {
     try {
-      const endpoint = currentTag ? `/posts?tag=${currentTag}` : '/posts';
-      const response = await API.get(endpoint);
-      setPosts(response.data);
+      if (targetPostId) {
+        const response = await API.get(`/posts/${targetPostId}`);
+        setPosts([response.data]);
+      } else {
+        const endpoint = currentTag ? `/posts?tag=${currentTag}` : '/posts';
+        const response = await API.get(endpoint);
+        setPosts(response.data);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -38,7 +52,7 @@ const Feed = () => {
   useEffect(() => {
     fetchPosts();
     fetchSuggestions();
-  }, [currentTag, user]);
+  }, [currentTag, targetPostId, user]);
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
@@ -115,6 +129,12 @@ const Feed = () => {
     }
   };
 
+  const handleSharePost = (postId) => {
+    const deepLink = `${window.location.origin}/?postId=${postId}`;
+    navigator.clipboard.writeText(deepLink);
+    showToast('Direct link copied to clipboard!');
+  };
+
   const handleCommentChange = (postId, value) => {
     setCommentInputs({ ...commentInputs, [postId]: value });
   };
@@ -140,18 +160,18 @@ const Feed = () => {
 
   return (
     <div className="container" style={{ maxWidth: '935px' }}>
-      {currentTag && (
+      {(currentTag || targetPostId) && (
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Showing posts for #{currentTag}</h2>
+          <h2>{targetPostId ? 'Showing shared post' : `Showing posts for #${currentTag}`}</h2>
           <button className="btn" style={{ width: 'auto', padding: '5px 15px' }} onClick={() => setSearchParams({})}>
-            Clear Filter
+            Show All Feed
           </button>
         </div>
       )}
 
       <div className="feed-layout">
         <div>
-          {user && !currentTag && (
+          {user && !currentTag && !targetPostId && (
             <div className="auth-card" style={{ marginBottom: '30px', textAlign: 'left' }}>
               <h3>Create Post</h3>
               <form onSubmit={handleCreatePost}>
@@ -208,6 +228,9 @@ const Feed = () => {
                   <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
                     {post.likes.length} likes
                   </span>
+                  <button className="like-btn" style={{ marginLeft: '15px' }} onClick={() => handleSharePost(post._id)}>
+                    🔗
+                  </button>
                 </div>
                 {user && (
                   <button
@@ -264,9 +287,12 @@ const Feed = () => {
               )}
             </div>
           ))}
+          {posts.length === 0 && (
+            <div className="auth-card" style={{ textAlign: 'center', color: '#8e8e8e' }}>Post not found or has been deleted</div>
+          )}
         </div>
 
-        {user && (
+        {user && !targetPostId && (
           <div className="sidebar-widget">
             <div className="sidebar-title">Suggestions for you</div>
             {suggestions.map((suggestion) => (
@@ -334,6 +360,12 @@ const Feed = () => {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="toast-container">
+          {toast}
         </div>
       )}
     </div>
