@@ -124,11 +124,40 @@ const getPostById = async (req, res) => {
   }
 };
 
+const updatePost = async (req, res) => {
+  try {
+    const { caption } = req.body;
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    if (post.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized action' });
+    }
+    post.caption = caption;
+    await post.save();
+    const populatedPost = await Post.findById(post._id)
+      .populate('user', 'username profilePicture isVerified')
+      .populate('likes', 'username profilePicture isVerified')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'user',
+          select: 'username profilePicture isVerified'
+        }
+      });
+    res.status(200).json(populatedPost);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createPost,
   getAllPosts,
   getUserPosts,
   deletePost,
   likeUnlikePost,
-  getPostById
+  getPostById,
+  updatePost
 };

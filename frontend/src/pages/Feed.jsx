@@ -24,6 +24,9 @@ const Feed = () => {
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
   const [storyProgress, setStoryProgress] = useState(0);
 
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editCaptionText, setEditCaptionText] = useState('');
+
   const progressInterval = useRef(null);
 
   const showToast = (message) => {
@@ -143,6 +146,22 @@ const Feed = () => {
   const handleDeletePost = async (postId) => {
     try {
       await API.delete(`/posts/${postId}`);
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleStartEdit = (post) => {
+    setEditingPostId(post._id);
+    setEditCaptionText(post.caption);
+  };
+
+  const handleSaveEdit = async (postId) => {
+    try {
+      await API.put(`/posts/${postId}`, { caption: editCaptionText });
+      setEditingPostId(null);
+      setEditCaptionText('');
       fetchPosts();
     } catch (error) {
       console.error(error);
@@ -305,9 +324,14 @@ const Feed = () => {
                   </Link>
                 </div>
                 {user && user.id === post.user._id && (
-                  <button className="delete-btn" onClick={() => handleDeletePost(post._id)}>
-                    Delete
-                  </button>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button className="delete-btn" style={{ color: '#0095f6' }} onClick={() => handleStartEdit(post)}>
+                      Edit
+                    </button>
+                    <button className="delete-btn" onClick={() => handleDeletePost(post._id)}>
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
               {post.image && <img src={post.image} alt="Post content" className="post-image" />}
@@ -334,9 +358,27 @@ const Feed = () => {
                 )}
               </div>
               <div className="post-content">
-                <p>
-                  <strong>{post.user.username}</strong> {renderCaption(post.caption)}
-                </p>
+                {editingPostId === post._id ? (
+                  <div>
+                    <div className="form-group" style={{ marginBottom: '10px' }}>
+                      <textarea
+                        value={editCaptionText}
+                        onChange={(e) => setEditCaptionText(e.target.value)}
+                        rows="2"
+                      />
+                    </div>
+                    <button className="btn" style={{ width: 'auto', padding: '3px 12px', fontSize: '12px', marginRight: '10px' }} onClick={() => handleSaveEdit(post._id)}>
+                      Save
+                    </button>
+                    <button className="btn" style={{ width: 'auto', padding: '3px 12px', fontSize: '12px', backgroundColor: '#dbdbdb', color: '#000' }} onClick={() => setEditingPostId(null)}>
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <p>
+                    <strong>{post.user.username}</strong> {renderCaption(post.caption)}
+                  </p>
+                )}
               </div>
               <div className="comment-section">
                 {post.comments.map((comment) => (
