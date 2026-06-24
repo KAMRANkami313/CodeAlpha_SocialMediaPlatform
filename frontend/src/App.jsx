@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Feed from './pages/Feed';
 import Profile from './pages/Profile';
 import Messages from './pages/Messages';
+import Explore from './pages/Explore';
 import API from './services/api';
 
 const Navbar = () => {
@@ -109,6 +110,7 @@ const Navbar = () => {
         <Link to="/">Home</Link>
         {user ? (
           <>
+            <Link to="/explore">Explore</Link>
             <Link to="/messages">Messages</Link>
             <button onClick={handleToggleNotifications} style={{ position: 'relative' }}>
               Notifications
@@ -167,6 +169,7 @@ const AppContent = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/explore" element={<Explore />} />
       </Routes>
     </Router>
   );
