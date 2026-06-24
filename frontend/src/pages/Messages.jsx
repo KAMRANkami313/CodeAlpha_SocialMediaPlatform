@@ -65,6 +65,22 @@ const Messages = () => {
     }
   };
 
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      await API.delete(`/messages/delete/${messageId}`);
+      setMessages(messages.filter((m) => m._id !== messageId));
+      fetchConversations();
+    } catch (err) {
+      try {
+        await API.delete(`/messages/${activePartner._id}/${messageId}`);
+      } catch (innerErr) {
+        await API.delete(`/messages/${messageId}`);
+      }
+      fetchMessages();
+      fetchConversations();
+    }
+  };
+
   return (
     <div className="container" style={{ maxWidth: '935px' }}>
       <div className="chat-layout">
@@ -109,8 +125,18 @@ const Messages = () => {
                   <div
                     key={m._id}
                     className={`chat-bubble ${m.sender === user.id ? 'mine' : 'theirs'}`}
+                    style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '10px' }}
                   >
-                    {m.content}
+                    {m.sender === user.id && (
+                      <button
+                        className="delete-btn"
+                        style={{ fontSize: '10px', color: '#8e8e8e', background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
+                        onClick={() => handleDeleteMessage(m._id)}
+                      >
+                        ×
+                      </button>
+                    )}
+                    <div>{m.content}</div>
                   </div>
                 ))}
               </div>

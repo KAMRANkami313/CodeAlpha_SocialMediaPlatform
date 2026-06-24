@@ -51,8 +51,25 @@ const getConversationsList = async (req, res) => {
   }
 };
 
+const deleteMessage = async (req, res) => {
+  try {
+    const message = await Message.findById(req.params.messageId);
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+    if (message.sender.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized action' });
+    }
+    await Message.findByIdAndDelete(req.params.messageId);
+    res.status(200).json({ message: 'Message deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   sendMessage,
   getConversation,
-  getConversationsList
+  getConversationsList,
+  deleteMessage
 };

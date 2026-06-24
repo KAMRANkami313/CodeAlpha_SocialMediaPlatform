@@ -171,6 +171,15 @@ const Feed = () => {
     }
   };
 
+  const handleLikeComment = async (postId, commentId) => {
+    try {
+      await API.post(`/posts/${postId}/comment/${commentId}/like`);
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleFollowSuggestion = async (id) => {
     try {
       await API.post(`/users/follow/${id}`);
@@ -349,11 +358,17 @@ const Feed = () => {
                         <span style={{ marginLeft: '8px' }}>{comment.content}</span>
                       </div>
                     </div>
-                    {user && (user.id === comment.user._id || user.id === post.user._id) && (
-                      <button className="delete-btn" style={{ fontSize: '11px' }} onClick={() => handleDeleteComment(post._id, comment._id)}>
-                        ×
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <button className="delete-btn" style={{ fontSize: '12px' }} onClick={() => handleLikeComment(post._id, comment._id)}>
+                        {comment.likes?.includes(user?.id) ? '❤️' : '🤍'}
+                        <span style={{ fontSize: '10px', marginLeft: '3px' }}>{comment.likes?.length || 0}</span>
                       </button>
-                    )}
+                      {user && (user.id === comment.user._id || user.id === post.user._id) && (
+                        <button className="delete-btn" style={{ fontSize: '13px' }} onClick={() => handleDeleteComment(post._id, comment._id)}>
+                          ×
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
