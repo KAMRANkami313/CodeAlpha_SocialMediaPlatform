@@ -27,6 +27,9 @@ const Feed = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editCaptionText, setEditCaptionText] = useState('');
 
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentText, setEditCommentText] = useState('');
+
   const progressInterval = useRef(null);
 
   const showToast = (message) => {
@@ -193,6 +196,22 @@ const Feed = () => {
   const handleLikeComment = async (postId, commentId) => {
     try {
       await API.post(`/posts/${postId}/comment/${commentId}/like`);
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleStartEditComment = (comment) => {
+    setEditingCommentId(comment._id);
+    setEditCommentText(comment.content);
+  };
+
+  const handleSaveEditComment = async (postId, commentId) => {
+    try {
+      await API.put(`/posts/${postId}/comment/${commentId}`, { content: editCommentText });
+      setEditingCommentId(null);
+      setEditCommentText('');
       fetchPosts();
     } catch (error) {
       console.error(error);
@@ -397,7 +416,24 @@ const Feed = () => {
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <strong>{comment.user.username}</strong>
                         {comment.user.isVerified && <span className="verified-badge">✓</span>}
-                        <span style={{ marginLeft: '8px' }}>{comment.content}</span>
+                        {editingCommentId === comment._id ? (
+                          <div style={{ marginLeft: '10px', display: 'flex', gap: '5px' }}>
+                            <input
+                              type="text"
+                              value={editCommentText}
+                              onChange={(e) => setEditCommentText(e.target.value)}
+                              style={{ padding: '2px 5px', fontSize: '12px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--card-bg)', color: 'var(--text-color)' }}
+                            />
+                            <button className="delete-btn" style={{ color: '#0095f6', fontSize: '11px' }} onClick={() => handleSaveEditComment(post._id, comment._id)}>
+                              Save
+                            </button>
+                            <button className="delete-btn" style={{ fontSize: '11px' }} onClick={() => setEditingCommentId(null)}>
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ marginLeft: '8px' }}>{comment.content}</span>
+                        )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -405,6 +441,11 @@ const Feed = () => {
                         {comment.likes?.includes(user?.id) ? '❤️' : '🤍'}
                         <span style={{ fontSize: '10px', marginLeft: '3px' }}>{comment.likes?.length || 0}</span>
                       </button>
+                      {editingCommentId !== comment._id && user && user.id === comment.user._id && (
+                        <button className="delete-btn" style={{ fontSize: '12px', color: '#0095f6' }} onClick={() => handleStartEditComment(comment)}>
+                          Edit
+                        </button>
+                      )}
                       {user && (user.id === comment.user._id || user.id === post.user._id) && (
                         <button className="delete-btn" style={{ fontSize: '13px' }} onClick={() => handleDeleteComment(post._id, comment._id)}>
                           ×

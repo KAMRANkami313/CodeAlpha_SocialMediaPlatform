@@ -76,8 +76,27 @@ const likeUnlikeComment = async (req, res) => {
   }
 };
 
+const updateComment = async (req, res) => {
+  try {
+    const { content } = req.body;
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+    if (comment.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized action' });
+    }
+    comment.content = content;
+    await comment.save();
+    res.status(200).json(comment);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   addComment,
   deleteComment,
-  likeUnlikeComment
+  likeUnlikeComment,
+  updateComment
 };
