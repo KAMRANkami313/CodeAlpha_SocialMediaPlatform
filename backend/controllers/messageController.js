@@ -37,7 +37,7 @@ const getConversationsList = async (req, res) => {
     const userId = req.user.id;
     const messages = await Message.find({
       $or: [{ sender: userId }, { receiver: userId }]
-    }).populate('sender receiver', 'username profilePicture');
+    }).populate('sender receiver', 'username profilePicture isVerified');
 
     const usersMap = {};
     messages.forEach((msg) => {

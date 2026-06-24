@@ -86,7 +86,10 @@ const Messages = () => {
               ) : (
                 <div className="suggestion-avatar" style={{ width: '28px', height: '28px' }}></div>
               )}
-              <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{c.username}</div>
+              <div style={{ fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+                {c.username}
+                {c.isVerified && <span className="verified-badge">✓</span>}
+              </div>
             </div>
           ))}
           {conversations.length === 0 && (
@@ -97,7 +100,10 @@ const Messages = () => {
         <div className="chat-pane-wrapper">
           {activePartner ? (
             <div className="chat-pane">
-              <div className="chat-header">Converse with {activePartner.username}</div>
+              <div className="chat-header" style={{ display: 'flex', alignItems: 'center' }}>
+                Converse with {activePartner.username}
+                {activePartner.isVerified && <span className="verified-badge">✓</span>}
+              </div>
               <div className="chat-messages">
                 {messages.map((m) => (
                   <div

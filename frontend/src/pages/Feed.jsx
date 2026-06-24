@@ -211,7 +211,10 @@ const Feed = () => {
                   ) : (
                     <div className="post-avatar"></div>
                   )}
-                  <Link to={`/profile/${post.user._id}`}>{post.user.username}</Link>
+                  <Link to={`/profile/${post.user._id}`} style={{ display: 'flex', alignItems: 'center' }}>
+                    {post.user.username}
+                    {post.user.isVerified && <span className="verified-badge">✓</span>}
+                  </Link>
                 </div>
                 {user && user.id === post.user._id && (
                   <button className="delete-btn" onClick={() => handleDeletePost(post._id)}>
@@ -261,8 +264,10 @@ const Feed = () => {
                       ) : (
                         <div className="post-avatar" style={{ width: '20px', height: '20px', marginRight: '8px' }}></div>
                       )}
-                      <div>
-                        <strong>{comment.user.username}</strong> {comment.content}
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <strong>{comment.user.username}</strong>
+                        {comment.user.isVerified && <span className="verified-badge">✓</span>}
+                        <span style={{ marginLeft: '8px' }}>{comment.content}</span>
                       </div>
                     </div>
                     {user && (user.id === comment.user._id || user.id === post.user._id) && (
@@ -308,8 +313,9 @@ const Feed = () => {
                   ) : (
                     <div className="suggestion-avatar"></div>
                   )}
-                  <Link to={`/profile/${suggestion._id}`} className="suggestion-username">
+                  <Link to={`/profile/${suggestion._id}`} className="suggestion-username" style={{ display: 'flex', alignItems: 'center' }}>
                     {suggestion.username}
+                    {suggestion.isVerified && <span className="verified-badge">✓</span>}
                   </Link>
                 </div>
                 <button className="follow-link" onClick={() => handleFollowSuggestion(suggestion._id)}>
@@ -348,9 +354,11 @@ const Feed = () => {
                     <Link
                       to={`/profile/${liker._id}`}
                       className="suggestion-username"
+                      style={{ display: 'flex', alignItems: 'center' }}
                       onClick={() => setActiveLikers(null)}
                     >
                       {liker.username}
+                      {liker.isVerified && <span className="verified-badge">✓</span>}
                     </Link>
                   </div>
                 </div>

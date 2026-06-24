@@ -4,14 +4,14 @@ const User = require('../models/User');
 const getExploreData = async (req, res) => {
   try {
     const trendingPosts = await Post.find()
-      .populate('user', 'username profilePicture')
-      .populate('likes', 'username profilePicture');
+      .populate('user', 'username profilePicture isVerified')
+      .populate('likes', 'username profilePicture isVerified');
 
     trendingPosts.sort((a, b) => b.likes.length - a.likes.length);
     const topPosts = trendingPosts.slice(0, 6);
 
     const discoverUsers = await User.find({ _id: { $ne: req.user.id } })
-      .select('username profilePicture bio')
+      .select('username profilePicture bio isVerified')
       .limit(6);
 
     const allPosts = await Post.find().select('caption');

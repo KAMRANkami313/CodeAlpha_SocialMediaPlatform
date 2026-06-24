@@ -10,7 +10,7 @@ const createPost = async (req, res) => {
       image
     });
     await newPost.save();
-    const populatedPost = await Post.findById(newPost._id).populate('user', 'username profilePicture');
+    const populatedPost = await Post.findById(newPost._id).populate('user', 'username profilePicture isVerified');
     res.status(201).json(populatedPost);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -26,13 +26,13 @@ const getAllPosts = async (req, res) => {
     }
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
-      .populate('user', 'username profilePicture')
-      .populate('likes', 'username profilePicture')
+      .populate('user', 'username profilePicture isVerified')
+      .populate('likes', 'username profilePicture isVerified')
       .populate({
         path: 'comments',
         populate: {
           path: 'user',
-          select: 'username profilePicture'
+          select: 'username profilePicture isVerified'
         }
       });
     res.status(200).json(posts);
@@ -45,13 +45,13 @@ const getUserPosts = async (req, res) => {
   try {
     const posts = await Post.find({ user: req.params.userId })
       .sort({ createdAt: -1 })
-      .populate('user', 'username profilePicture')
-      .populate('likes', 'username profilePicture')
+      .populate('user', 'username profilePicture isVerified')
+      .populate('likes', 'username profilePicture isVerified')
       .populate({
         path: 'comments',
         populate: {
           path: 'user',
-          select: 'username profilePicture'
+          select: 'username profilePicture isVerified'
         }
       });
     res.status(200).json(posts);
@@ -106,13 +106,13 @@ const likeUnlikePost = async (req, res) => {
 const getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('user', 'username profilePicture')
-      .populate('likes', 'username profilePicture')
+      .populate('user', 'username profilePicture isVerified')
+      .populate('likes', 'username profilePicture isVerified')
       .populate({
         path: 'comments',
         populate: {
           path: 'user',
-          select: 'username profilePicture'
+          select: 'username profilePicture isVerified'
         }
       });
     if (!post) {

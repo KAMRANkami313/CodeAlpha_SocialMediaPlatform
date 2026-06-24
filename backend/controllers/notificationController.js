@@ -4,7 +4,7 @@ const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ receiver: req.user.id })
       .sort({ createdAt: -1 })
-      .populate('sender', 'username profilePicture')
+      .populate('sender', 'username profilePicture isVerified')
       .populate('post', 'caption');
     res.status(200).json(notifications);
   } catch (error) {

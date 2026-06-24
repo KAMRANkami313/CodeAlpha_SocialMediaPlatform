@@ -11,6 +11,7 @@ const Profile = () => {
   const [posts, setPosts] = useState([]);
   const [bioInput, setBioInput] = useState('');
   const [profilePicInput, setProfilePicInput] = useState('');
+  const [isVerifiedInput, setIsVerifiedInput] = useState(false);
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
 
@@ -22,6 +23,7 @@ const Profile = () => {
       setProfile(resProfile.data);
       setBioInput(resProfile.data.bio);
       setProfilePicInput(resProfile.data.profilePicture);
+      setIsVerifiedInput(resProfile.data.isVerified);
       const resPosts = await API.get(`/posts/user/${id}`);
       setPosts(resPosts.data);
     } catch (err) {
@@ -51,7 +53,11 @@ const Profile = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      await API.put('/users/profile', { bio: bioInput, profilePicture: profilePicInput });
+      await API.put('/users/profile', {
+        bio: bioInput,
+        profilePicture: profilePicInput,
+        isVerified: isVerifiedInput
+      });
       setEditing(false);
       fetchProfile();
     } catch (err) {
@@ -83,10 +89,11 @@ const Profile = () => {
           <div className="profile-avatar"></div>
         )}
         <div className="profile-info">
-          <h2>
+          <h2 style={{ display: 'flex', alignItems: 'center' }}>
             {profile.username}
+            {profile.isVerified && <span className="verified-badge">✓</span>}
             {user && !isMe && (
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginLeft: '20px' }}>
                 <button className="btn" style={{ width: 'auto', padding: '5px 15px' }} onClick={handleFollowUnfollow}>
                   {isFollowing ? 'Unfollow' : 'Follow'}
                 </button>
@@ -117,6 +124,15 @@ const Profile = () => {
                   value={bioInput}
                   onChange={(e) => setBioInput(e.target.value)}
                 />
+              </div>
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input
+                  type="checkbox"
+                  checked={isVerifiedInput}
+                  onChange={(e) => setIsVerifiedInput(e.target.checked)}
+                  style={{ width: 'auto' }}
+                />
+                <label style={{ fontSize: '14px' }}>Request Verification Checkmark Badge</label>
               </div>
               <button type="submit" className="btn" style={{ width: 'auto', marginRight: '10px' }}>Save Changes</button>
               <button type="button" className="btn" style={{ width: 'auto', backgroundColor: '#dbdbdb', color: '#000' }} onClick={() => setEditing(false)}>Cancel</button>
@@ -162,7 +178,10 @@ const Profile = () => {
             ) : (
               <div className="post-avatar"></div>
             )}
-            <strong>{post.user.username}</strong>
+            <strong style={{ display: 'flex', alignItems: 'center' }}>
+              {post.user.username}
+              {post.user.isVerified && <span className="verified-badge">✓</span>}
+            </strong>
           </div>
           {post.image && <img src={post.image} alt="Post content" className="post-image" />}
           <div className="post-actions" style={{ padding: '15px 15px 0 15px' }}>
@@ -200,9 +219,11 @@ const Profile = () => {
                     <Link
                       to={`/profile/${liker._id}`}
                       className="suggestion-username"
+                      style={{ display: 'flex', alignItems: 'center' }}
                       onClick={() => setActiveLikers(null)}
                     >
                       {liker.username}
+                      {liker.isVerified && <span className="verified-badge">✓</span>}
                     </Link>
                   </div>
                 </div>

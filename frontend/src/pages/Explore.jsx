@@ -35,8 +35,12 @@ const Explore = () => {
                 ) : (
                   <div className="profile-avatar" style={{ width: '80px', height: '80px', margin: '0 auto 10px auto' }}></div>
                 )}
-                <Link to={`/profile/${u._id}`} style={{ fontWeight: 'bold', textDecoration: 'none', color: '#262626', display: 'block', marginBottom: '5px' }}>
+                <Link
+                  to={`/profile/${u._id}`}
+                  style={{ fontWeight: 'bold', textDecoration: 'none', color: '#262626', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}
+                >
                   {u.username}
+                  {u.isVerified && <span className="verified-badge">✓</span>}
                 </Link>
                 <p style={{ fontSize: '12px', color: '#8e8e8e', margin: '0 0 10px 0', height: '36px', overflow: 'hidden' }}>{u.bio || 'No bio yet'}</p>
                 <button className="btn" style={{ padding: '5px 15px', fontSize: '13px' }} onClick={() => navigate(`/profile/${u._id}`)}>
@@ -77,8 +81,9 @@ const Explore = () => {
               ) : (
                 <div className="post-avatar" style={{ width: '24px', height: '24px' }}></div>
               )}
-              <Link to={`/profile/${post.user._id}`} style={{ fontSize: '13px', textDecoration: 'none', color: '#262626', fontWeight: 'bold' }}>
+              <Link to={`/profile/${post.user._id}`} style={{ fontSize: '13px', textDecoration: 'none', color: '#262626', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
                 {post.user.username}
+                {post.user.isVerified && <span className="verified-badge">✓</span>}
               </Link>
             </div>
             {post.image ? (

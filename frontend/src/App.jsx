@@ -89,6 +89,7 @@ const Navbar = () => {
                 key={u._id}
                 to={`/profile/${u._id}`}
                 className="search-item"
+                style={{ display: 'flex', alignItems: 'center' }}
                 onClick={handleSelectUser}
               >
                 {u.profilePicture ? (
@@ -101,7 +102,10 @@ const Navbar = () => {
                 ) : (
                   <div className="search-item-avatar"></div>
                 )}
-                <div>{u.username}</div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {u.username}
+                  {u.isVerified && <span className="verified-badge">✓</span>}
+                </div>
               </Link>
             ))}
           </div>
@@ -133,7 +137,10 @@ const Navbar = () => {
                       <div className="notification-avatar"></div>
                     )}
                     <div>
-                      <strong>{n.sender.username}</strong>{' '}
+                      <strong style={{ display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>
+                        {n.sender.username}
+                        {n.sender.isVerified && <span className="verified-badge">✓</span>}
+                      </strong>{' '}
                       {n.type === 'like' && 'liked your post'}
                       {n.type === 'comment' && 'commented on your post'}
                       {n.type === 'follow' && 'started following you'}

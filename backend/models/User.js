@@ -39,7 +39,11 @@ const userSchema = new mongoose.Schema({
   savedPosts: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Post'
-  }]
+  }],
+  isVerified: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 });

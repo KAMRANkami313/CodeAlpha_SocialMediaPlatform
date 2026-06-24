@@ -51,7 +51,8 @@ const login = async (req, res) => {
         username: user.username,
         email: user.email,
         bio: user.bio,
-        profilePicture: user.profilePicture
+        profilePicture: user.profilePicture,
+        isVerified: user.isVerified
       }
     });
   } catch (error) {
@@ -63,13 +64,13 @@ const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
       .select('-password')
-      .populate('followers', 'username profilePicture')
-      .populate('following', 'username profilePicture')
+      .populate('followers', 'username profilePicture isVerified')
+      .populate('following', 'username profilePicture isVerified')
       .populate({
         path: 'savedPosts',
         populate: {
           path: 'user',
-          select: 'username profilePicture'
+          select: 'username profilePicture isVerified'
         }
       });
     if (!user) {
@@ -83,10 +84,10 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { bio, profilePicture } = req.body;
+    const { bio, profilePicture, isVerified } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { bio, profilePicture },
+      { bio, profilePicture, isVerified },
       { new: true }
     ).select('-password');
     res.status(200).json(user);
@@ -174,7 +175,7 @@ const searchUsers = async (req, res) => {
     }
     const users = await User.find({
       username: { $regex: query, $options: 'i' }
-    }).select('username profilePicture bio');
+    }).select('username profilePicture bio isVerified');
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -186,7 +187,7 @@ const getSuggestedUsers = async (req, res) => {
     const currentUser = await User.findById(req.user.id);
     const excludedUsers = [...currentUser.following, req.user.id];
     const suggestions = await User.find({ _id: { $nin: excludedUsers } })
-      .select('username profilePicture bio')
+      .select('username profilePicture bio isVerified')
       .limit(5);
     res.status(200).json(suggestions);
   } catch (error) {
