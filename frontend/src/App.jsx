@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Feed from './pages/Feed';
 import Profile from './pages/Profile';
+import Messages from './pages/Messages';
 import API from './services/api';
 
 const Navbar = () => {
@@ -99,6 +100,7 @@ const Navbar = () => {
         <Link to="/">Home</Link>
         {user ? (
           <>
+            <Link to="/messages">Messages</Link>
             <button onClick={handleToggleNotifications} style={{ position: 'relative' }}>
               Notifications
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
@@ -146,6 +148,7 @@ const AppContent = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile/:id" element={<Profile />} />
+        <Route path="/messages" element={<Messages />} />
       </Routes>
     </Router>
   );

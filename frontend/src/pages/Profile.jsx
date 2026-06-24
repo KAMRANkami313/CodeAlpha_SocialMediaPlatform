@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
 const Profile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -54,6 +55,10 @@ const Profile = () => {
     }
   };
 
+  const handleMessageUser = () => {
+    navigate('/messages', { state: { startChatWith: profile } });
+  };
+
   if (!profile) return <div className="container">Loading profile...</div>;
 
   const isMe = user?.id === profile._id;
@@ -68,9 +73,14 @@ const Profile = () => {
           <h2>
             {profile.username}
             {user && !isMe && (
-              <button className="btn" style={{ width: 'auto', padding: '5px 15px' }} onClick={handleFollowUnfollow}>
-                {isFollowing ? 'Unfollow' : 'Follow'}
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn" style={{ width: 'auto', padding: '5px 15px' }} onClick={handleFollowUnfollow}>
+                  {isFollowing ? 'Unfollow' : 'Follow'}
+                </button>
+                <button className="btn" style={{ width: 'auto', padding: '5px 15px', backgroundColor: '#dbdbdb', color: '#000' }} onClick={handleMessageUser}>
+                  Message
+                </button>
+              </div>
             )}
           </h2>
           <div className="profile-stats">
