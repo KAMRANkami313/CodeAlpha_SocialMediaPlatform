@@ -6,14 +6,17 @@ import API from '../services/api';
 const Profile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [usernameInput, setUsernameInput] = useState('');
+  const [emailInput, setEmailInput] = useState('');
   const [bioInput, setBioInput] = useState('');
   const [profilePicInput, setProfilePicInput] = useState('');
   const [isVerifiedInput, setIsVerifiedInput] = useState(false);
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
+  const [error, setError] = useState('');
 
   const [activeLikers, setActiveLikers] = useState(null);
 
@@ -21,6 +24,8 @@ const Profile = () => {
     try {
       const resProfile = await API.get(`/users/profile/${id}`);
       setProfile(resProfile.data);
+      setUsernameInput(resProfile.data.username);
+      setEmailInput(resProfile.data.email);
       setBioInput(resProfile.data.bio);
       setProfilePicInput(resProfile.data.profilePicture);
       setIsVerifiedInput(resProfile.data.isVerified);
@@ -52,16 +57,32 @@ const Profile = () => {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    setError('');
     try {
-      await API.put('/users/profile', {
+      const response = await API.put('/users/profile', {
+        username: usernameInput,
+        email: emailInput,
         bio: bioInput,
         profilePicture: profilePicInput,
         isVerified: isVerifiedInput
       });
+
+      const updatedUser = {
+        id: response.data._id,
+        username: response.data.username,
+        email: response.data.email,
+        bio: response.data.bio,
+        profilePicture: response.data.profilePicture,
+        isVerified: response.data.isVerified,
+        savedPosts: user.savedPosts
+      };
+
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
       setEditing(false);
       fetchProfile();
     } catch (err) {
-      console.error(err);
+      setError(err.response?.data?.message || 'Profile update failed');
     }
   };
 
@@ -110,6 +131,25 @@ const Profile = () => {
           </div>
           {editing ? (
             <form onSubmit={handleUpdateProfile}>
+              {error && <p style={{ color: 'red', fontSize: '13px' }}>{error}</p>}
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  required
+                />
+              </div>
               <div className="form-group">
                 <input
                   type="text"

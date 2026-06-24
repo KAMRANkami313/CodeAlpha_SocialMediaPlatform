@@ -84,10 +84,25 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { bio, profilePicture, isVerified } = req.body;
+    const { username, email, bio, profilePicture, isVerified } = req.body;
+
+    if (username) {
+      const existingUser = await User.findOne({ username, _id: { $ne: req.user.id } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Username is already taken' });
+      }
+    }
+
+    if (email) {
+      const existingUser = await User.findOne({ email, _id: { $ne: req.user.id } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email is already in use' });
+      }
+    }
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { bio, profilePicture, isVerified },
+      { username, email, bio, profilePicture, isVerified },
       { new: true }
     ).select('-password');
     res.status(200).json(user);
