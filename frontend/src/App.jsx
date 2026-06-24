@@ -88,7 +88,16 @@ const Navbar = () => {
                 className="search-item"
                 onClick={handleSelectUser}
               >
-                <div className="search-item-avatar"></div>
+                {u.profilePicture ? (
+                  <img
+                    src={u.profilePicture}
+                    alt="Avatar"
+                    className="search-item-avatar"
+                    style={{ objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div className="search-item-avatar"></div>
+                )}
                 <div>{u.username}</div>
               </Link>
             ))}
@@ -109,7 +118,16 @@ const Navbar = () => {
               <div className="notification-dropdown">
                 {notifications.map((n) => (
                   <div key={n._id} className={`notification-item ${!n.read ? 'unread' : ''}`}>
-                    <div className="notification-avatar"></div>
+                    {n.sender.profilePicture ? (
+                      <img
+                        src={n.sender.profilePicture}
+                        alt="Avatar"
+                        className="notification-avatar"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div className="notification-avatar"></div>
+                    )}
                     <div>
                       <strong>{n.sender.username}</strong>{' '}
                       {n.type === 'like' && 'liked your post'}

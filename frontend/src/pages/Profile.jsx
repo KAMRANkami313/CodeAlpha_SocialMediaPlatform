@@ -10,6 +10,7 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [bioInput, setBioInput] = useState('');
+  const [profilePicInput, setProfilePicInput] = useState('');
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
 
@@ -18,6 +19,7 @@ const Profile = () => {
       const resProfile = await API.get(`/users/profile/${id}`);
       setProfile(resProfile.data);
       setBioInput(resProfile.data.bio);
+      setProfilePicInput(resProfile.data.profilePicture);
       const resPosts = await API.get(`/posts/user/${id}`);
       setPosts(resPosts.data);
     } catch (err) {
@@ -44,10 +46,10 @@ const Profile = () => {
     }
   };
 
-  const handleUpdateBio = async (e) => {
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      await API.put('/users/profile', { bio: bioInput });
+      await API.put('/users/profile', { bio: bioInput, profilePicture: profilePicInput });
       setEditing(false);
       fetchProfile();
     } catch (err) {
@@ -68,7 +70,16 @@ const Profile = () => {
   return (
     <div className="container">
       <div className="profile-header">
-        <div className="profile-avatar"></div>
+        {profile.profilePicture ? (
+          <img
+            src={profile.profilePicture}
+            alt="Profile Avatar"
+            className="profile-avatar"
+            style={{ objectFit: 'cover' }}
+          />
+        ) : (
+          <div className="profile-avatar"></div>
+        )}
         <div className="profile-info">
           <h2>
             {profile.username}
@@ -89,21 +100,30 @@ const Profile = () => {
             <span><strong>{profile.following.length}</strong> following</span>
           </div>
           {editing ? (
-            <form onSubmit={handleUpdateBio}>
+            <form onSubmit={handleUpdateProfile}>
+              <div className="form-group">
+                <input
+                  type="text"
+                  placeholder="Profile Picture URL"
+                  value={profilePicInput}
+                  onChange={(e) => setProfilePicInput(e.target.value)}
+                />
+              </div>
               <div className="form-group">
                 <textarea
+                  placeholder="Bio"
                   value={bioInput}
                   onChange={(e) => setBioInput(e.target.value)}
                 />
               </div>
-              <button type="submit" className="btn" style={{ width: 'auto', marginRight: '10px' }}>Save</button>
+              <button type="submit" className="btn" style={{ width: 'auto', marginRight: '10px' }}>Save Changes</button>
               <button type="button" className="btn" style={{ width: 'auto', backgroundColor: '#dbdbdb', color: '#000' }} onClick={() => setEditing(false)}>Cancel</button>
             </form>
           ) : (
             <div className="profile-bio">
               <p>{profile.bio || 'No bio yet.'}</p>
               {isMe && (
-                <button className="btn" style={{ width: 'auto', padding: '5px 15px', backgroundColor: '#dbdbdb', color: '#000' }} onClick={() => setEditing(true)}>Edit Bio</button>
+                <button className="btn" style={{ width: 'auto', padding: '5px 15px', backgroundColor: '#dbdbdb', color: '#000' }} onClick={() => setEditing(true)}>Edit Profile</button>
               )}
             </div>
           )}
@@ -130,7 +150,16 @@ const Profile = () => {
       {displayedPosts.map((post) => (
         <div className="post-card" key={post._id}>
           <div className="post-header">
-            <div className="post-avatar"></div>
+            {post.user.profilePicture ? (
+              <img
+                src={post.user.profilePicture}
+                alt="Avatar"
+                className="post-avatar"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="post-avatar"></div>
+            )}
             <strong>{post.user.username}</strong>
           </div>
           {post.image && <img src={post.image} alt="Post content" className="post-image" />}

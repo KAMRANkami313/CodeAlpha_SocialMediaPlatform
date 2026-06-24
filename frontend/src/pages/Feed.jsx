@@ -179,7 +179,16 @@ const Feed = () => {
             <div className="post-card" key={post._id}>
               <div className="post-header" style={{ justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <div className="post-avatar"></div>
+                  {post.user.profilePicture ? (
+                    <img
+                      src={post.user.profilePicture}
+                      alt="Avatar"
+                      className="post-avatar"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div className="post-avatar"></div>
+                  )}
                   <Link to={`/profile/${post.user._id}`}>{post.user.username}</Link>
                 </div>
                 {user && user.id === post.user._id && (
@@ -214,8 +223,20 @@ const Feed = () => {
               <div className="comment-section">
                 {post.comments.map((comment) => (
                   <div className="comment" key={comment._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <strong>{comment.user.username}</strong> {comment.content}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      {comment.user.profilePicture ? (
+                        <img
+                          src={comment.user.profilePicture}
+                          alt="Avatar"
+                          className="post-avatar"
+                          style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div className="post-avatar" style={{ width: '20px', height: '20px', marginRight: '8px' }}></div>
+                      )}
+                      <div>
+                        <strong>{comment.user.username}</strong> {comment.content}
+                      </div>
                     </div>
                     {user && (user.id === comment.user._id || user.id === post.user._id) && (
                       <button className="delete-btn" style={{ fontSize: '11px' }} onClick={() => handleDeleteComment(post._id, comment._id)}>
@@ -247,7 +268,16 @@ const Feed = () => {
             {suggestions.map((suggestion) => (
               <div className="suggestion-item" key={suggestion._id}>
                 <div className="suggestion-info">
-                  <div className="suggestion-avatar"></div>
+                  {suggestion.profilePicture ? (
+                    <img
+                      src={suggestion.profilePicture}
+                      alt="Avatar"
+                      className="suggestion-avatar"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div className="suggestion-avatar"></div>
+                  )}
                   <Link to={`/profile/${suggestion._id}`} className="suggestion-username">
                     {suggestion.username}
                   </Link>

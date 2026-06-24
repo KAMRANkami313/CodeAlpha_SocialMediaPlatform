@@ -76,7 +76,16 @@ const Messages = () => {
               className={`chat-partner-item ${activePartner?._id === c._id ? 'active' : ''}`}
               onClick={() => setActivePartner(c)}
             >
-              <div className="suggestion-avatar" style={{ width: '28px', height: '28px' }}></div>
+              {c.profilePicture ? (
+                <img
+                  src={c.profilePicture}
+                  alt="Avatar"
+                  className="suggestion-avatar"
+                  style={{ width: '28px', height: '28px', objectFit: 'cover' }}
+                />
+              ) : (
+                <div className="suggestion-avatar" style={{ width: '28px', height: '28px' }}></div>
+              )}
               <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{c.username}</div>
             </div>
           ))}
