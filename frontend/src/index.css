@@ -287,3 +287,77 @@ body {
   color: #262626;
   border-top: 1px solid #262626;
 }
+.feed-layout {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 30px;
+}
+
+@media (max-width: 768px) {
+  .feed-layout {
+    grid-template-columns: 1fr;
+  }
+  .sidebar-widget {
+    display: none;
+  }
+}
+
+.sidebar-widget {
+  background-color: #ffffff;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  padding: 15px;
+  align-self: start;
+}
+
+.sidebar-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #8e8e8e;
+  margin-bottom: 15px;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.suggestion-info {
+  display: flex;
+  align-items: center;
+}
+
+.suggestion-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #dbdbdb;
+  margin-right: 10px;
+}
+
+.suggestion-username {
+  font-size: 13px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #262626;
+}
+
+.follow-link {
+  background: none;
+  border: none;
+  color: #0095f6;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ed4956;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}

@@ -6,6 +6,7 @@ import API from '../services/api';
 const Feed = () => {
   const { user, setUser } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
@@ -22,9 +23,20 @@ const Feed = () => {
     }
   };
 
+  const fetchSuggestions = async () => {
+    if (!user) return;
+    try {
+      const response = await API.get('/users/suggested');
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
-  }, [currentTag]);
+    fetchSuggestions();
+  }, [currentTag, user]);
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
@@ -60,6 +72,15 @@ const Feed = () => {
     }
   };
 
+  const handleDeletePost = async (postId) => {
+    try {
+      await API.delete(`/posts/${postId}`);
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleCommentSubmit = async (e, postId) => {
     e.preventDefault();
     const content = commentInputs[postId];
@@ -67,6 +88,25 @@ const Feed = () => {
     try {
       await API.post(`/posts/${postId}/comment`, { content });
       setCommentInputs({ ...commentInputs, [postId]: '' });
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      await API.delete(`/posts/${postId}/comment/${commentId}`);
+      fetchPosts();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleFollowSuggestion = async (id) => {
+    try {
+      await API.post(`/users/follow/${id}`);
+      fetchSuggestions();
       fetchPosts();
     } catch (error) {
       console.error(error);
@@ -97,7 +137,7 @@ const Feed = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: '935px' }}>
       {currentTag && (
         <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Showing posts for #{currentTag}</h2>
@@ -107,82 +147,122 @@ const Feed = () => {
         </div>
       )}
 
-      {user && !currentTag && (
-        <div className="auth-card" style={{ marginBottom: '30px', textAlign: 'left' }}>
-          <h3>Create Post</h3>
-          <form onSubmit={handleCreatePost}>
-            <div className="form-group">
-              <textarea
-                rows="3"
-                placeholder="What's on your mind? Use #tags!"
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                required
-              />
+      <div className="feed-layout">
+        <div>
+          {user && !currentTag && (
+            <div className="auth-card" style={{ marginBottom: '30px', textAlign: 'left' }}>
+              <h3>Create Post</h3>
+              <form onSubmit={handleCreatePost}>
+                <div className="form-group">
+                  <textarea
+                    rows="3"
+                    placeholder="What's on your mind? Use #tags!"
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <input
+                    type="text"
+                    placeholder="Image URL (optional)"
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className="btn">Post</button>
+              </form>
             </div>
-            <div className="form-group">
-              <input
-                type="text"
-                placeholder="Image URL (optional)"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="btn">Post</button>
-          </form>
-        </div>
-      )}
+          )}
 
-      {posts.map((post) => (
-        <div className="post-card" key={post._id}>
-          <div className="post-header">
-            <div className="post-avatar"></div>
-            <Link to={`/profile/${post.user._id}`}>{post.user.username}</Link>
-          </div>
-          {post.image && <img src={post.image} alt="Post content" className="post-image" />}
-          <div className="post-actions" style={{ justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <button className="like-btn" onClick={() => handleLike(post._id)}>
-                {post.likes.includes(user?.id) ? '❤️' : '🤍'}
-              </button>
-              <span>{post.likes.length} likes</span>
+          {posts.map((post) => (
+            <div className="post-card" key={post._id}>
+              <div className="post-header" style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div className="post-avatar"></div>
+                  <Link to={`/profile/${post.user._id}`}>{post.user.username}</Link>
+                </div>
+                {user && user.id === post.user._id && (
+                  <button className="delete-btn" onClick={() => handleDeletePost(post._id)}>
+                    Delete
+                  </button>
+                )}
+              </div>
+              {post.image && <img src={post.image} alt="Post content" className="post-image" />}
+              <div className="post-actions" style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <button className="like-btn" onClick={() => handleLike(post._id)}>
+                    {post.likes.includes(user?.id) ? '❤️' : '🤍'}
+                  </button>
+                  <span>{post.likes.length} likes</span>
+                </div>
+                {user && (
+                  <button
+                    className="like-btn"
+                    onClick={() => handleSave(post._id)}
+                    style={{ marginRight: 0 }}
+                  >
+                    {user.savedPosts?.includes(post._id) ? '🔖' : '📁'}
+                  </button>
+                )}
+              </div>
+              <div className="post-content">
+                <p>
+                  <strong>{post.user.username}</strong> {renderCaption(post.caption)}
+                </p>
+              </div>
+              <div className="comment-section">
+                {post.comments.map((comment) => (
+                  <div className="comment" key={comment._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <strong>{comment.user.username}</strong> {comment.content}
+                    </div>
+                    {user && (user.id === comment.user._id || user.id === post.user._id) && (
+                      <button className="delete-btn" style={{ fontSize: '11px' }} onClick={() => handleDeleteComment(post._id, comment._id)}>
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {user && (
+                <form className="comment-form" onSubmit={(e) => handleCommentSubmit(e, post._id)}>
+                  <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={commentInputs[post._id] || ''}
+                    onChange={(e) => handleCommentChange(post._id, e.target.value)}
+                    required
+                  />
+                  <button type="submit">Post</button>
+                </form>
+              )}
             </div>
-            {user && (
-              <button
-                className="like-btn"
-                onClick={() => handleSave(post._id)}
-                style={{ marginRight: 0 }}
-              >
-                {user.savedPosts?.includes(post._id) ? '🔖' : '📁'}
-              </button>
-            )}
-          </div>
-          <div className="post-content">
-            <p>
-              <strong>{post.user.username}</strong> {renderCaption(post.caption)}
-            </p>
-          </div>
-          <div className="comment-section">
-            {post.comments.map((comment) => (
-              <div className="comment" key={comment._id}>
-                <strong>{comment.user.username}</strong> {comment.content}
+          ))}
+        </div>
+
+        {user && (
+          <div className="sidebar-widget">
+            <div className="sidebar-title">Suggestions for you</div>
+            {suggestions.map((suggestion) => (
+              <div className="suggestion-item" key={suggestion._id}>
+                <div className="suggestion-info">
+                  <div className="suggestion-avatar"></div>
+                  <Link to={`/profile/${suggestion._id}`} className="suggestion-username">
+                    {suggestion.username}
+                  </Link>
+                </div>
+                <button className="follow-link" onClick={() => handleFollowSuggestion(suggestion._id)}>
+                  Follow
+                </button>
               </div>
             ))}
+            {suggestions.length === 0 && (
+              <div style={{ fontSize: '12px', color: '#8e8e8e' }}>No new suggestions</div>
+            )}
           </div>
-          {user && (
-            <form className="comment-form" onSubmit={(e) => handleCommentSubmit(e, post._id)}>
-              <input
-                type="text"
-                placeholder="Add a comment..."
-                value={commentInputs[post._id] || ''}
-                onChange={(e) => handleCommentChange(post._id, e.target.value)}
-                required
-              />
-              <button type="submit">Post</button>
-            </form>
-          )}
-        </div>
-      ))}
+        )}
+      </div>
     </div>
   );
 };

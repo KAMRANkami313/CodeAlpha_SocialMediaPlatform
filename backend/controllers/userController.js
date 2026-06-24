@@ -172,6 +172,19 @@ const searchUsers = async (req, res) => {
   }
 };
 
+const getSuggestedUsers = async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user.id);
+    const excludedUsers = [...currentUser.following, req.user.id];
+    const suggestions = await User.find({ _id: { $nin: excludedUsers } })
+      .select('username profilePicture bio')
+      .limit(5);
+    res.status(200).json(suggestions);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -180,5 +193,6 @@ module.exports = {
   followUser,
   unfollowUser,
   saveUnsavePost,
-  searchUsers
+  searchUsers,
+  getSuggestedUsers
 };

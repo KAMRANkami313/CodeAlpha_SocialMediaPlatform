@@ -8,13 +8,15 @@ const {
   followUser,
   unfollowUser,
   saveUnsavePost,
-  searchUsers
+  searchUsers,
+  getSuggestedUsers
 } = require('../controllers/userController');
 const auth = require('../middlewares/auth');
 
 router.post('/register', register);
 router.post('/login', login);
 router.get('/search', searchUsers);
+router.get('/suggested', auth, getSuggestedUsers);
 router.get('/profile/:id', getProfile);
 router.put('/profile', auth, updateProfile);
 router.post('/follow/:id', auth, followUser);

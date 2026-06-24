@@ -7,7 +7,7 @@ const {
   deletePost,
   likeUnlikePost
 } = require('../controllers/postController');
-const { addComment } = require('../controllers/commentController');
+const { addComment, deleteComment } = require('../controllers/commentController');
 const auth = require('../middlewares/auth');
 
 router.post('/', auth, createPost);
@@ -16,5 +16,6 @@ router.get('/user/:userId', getUserPosts);
 router.delete('/:id', auth, deletePost);
 router.post('/:id/like', auth, likeUnlikePost);
 router.post('/:postId/comment', auth, addComment);
+router.delete('/:postId/comment/:commentId', auth, deleteComment);
 
 module.exports = router;
