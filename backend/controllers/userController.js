@@ -62,7 +62,17 @@ const login = async (req, res) => {
 
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id)
+    let userProfile = await User.findById(req.params.id);
+    if (!userProfile) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (req.user && req.user.id !== req.params.id && !userProfile.views.includes(req.user.id)) {
+      userProfile.views.push(req.user.id);
+      await userProfile.save();
+    }
+
+    userProfile = await User.findById(req.params.id)
       .select('-password')
       .populate('followers', 'username profilePicture isVerified')
       .populate('following', 'username profilePicture isVerified')
@@ -73,10 +83,8 @@ const getProfile = async (req, res) => {
           select: 'username profilePicture isVerified'
         }
       });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.status(200).json(user);
+
+    res.status(200).json(userProfile);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

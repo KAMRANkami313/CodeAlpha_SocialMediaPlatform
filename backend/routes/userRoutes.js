@@ -17,7 +17,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.get('/search', searchUsers);
 router.get('/suggested', auth, getSuggestedUsers);
-router.get('/profile/:id', getProfile);
+router.get('/profile/:id', auth, getProfile);
 router.put('/profile', auth, updateProfile);
 router.post('/follow/:id', auth, followUser);
 router.post('/unfollow/:id', auth, unfollowUser);

@@ -147,6 +147,11 @@ const Profile = () => {
             >
               <strong>{profile.following.length}</strong> following
             </span>
+            {isMe && (
+              <span style={{ fontSize: '14px', color: 'var(--secondary-text)' }}>
+                🔒 <strong>{profile.views?.length || 0}</strong> views
+              </span>
+            )}
           </div>
           {editing ? (
             <form onSubmit={handleUpdateProfile}>
