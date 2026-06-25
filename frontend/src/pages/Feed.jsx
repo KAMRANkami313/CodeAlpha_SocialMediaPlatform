@@ -3,6 +3,21 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
+const PostViewTracker = ({ postId }) => {
+  useEffect(() => {
+    const registerView = async () => {
+      try {
+        await API.post(`/posts/${postId}/view`);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    registerView();
+  }, [postId]);
+
+  return null;
+};
+
 const Feed = () => {
   const { user, setUser } = useContext(AuthContext);
   const [posts, setPosts] = useState([]);
@@ -325,6 +340,7 @@ const Feed = () => {
 
           {posts.map((post) => (
             <div className="post-card" key={post._id}>
+              {user && <PostViewTracker postId={post._id} />}
               <div className="post-header" style={{ justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   {post.user.profilePicture ? (
@@ -365,6 +381,9 @@ const Feed = () => {
                   <button className="like-btn" style={{ marginLeft: '15px' }} onClick={() => handleSharePost(post._id)}>
                     🔗
                   </button>
+                  <span style={{ fontSize: '13px', color: 'var(--secondary-text)', marginLeft: '15px' }}>
+                    👁️ {post.views?.length || 0} views
+                  </span>
                 </div>
                 {user && (
                   <button

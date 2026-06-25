@@ -7,7 +7,8 @@ const {
   deletePost,
   likeUnlikePost,
   getPostById,
-  updatePost
+  updatePost,
+  trackImpression
 } = require('../controllers/postController');
 const { addComment, deleteComment, likeUnlikeComment, updateComment } = require('../controllers/commentController');
 const auth = require('../middlewares/auth');
@@ -23,5 +24,6 @@ router.delete('/:postId/comment/:commentId', auth, deleteComment);
 router.post('/:postId/comment/:commentId/like', auth, likeUnlikeComment);
 router.put('/:id', auth, updatePost);
 router.put('/:postId/comment/:commentId', auth, updateComment);
+router.post('/:id/view', auth, trackImpression);
 
 module.exports = router;
