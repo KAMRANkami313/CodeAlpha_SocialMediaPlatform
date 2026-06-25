@@ -45,6 +45,8 @@ const Feed = () => {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editCommentText, setEditCommentText] = useState('');
 
+  const [visibleComments, setVisibleComments] = useState({});
+
   const progressInterval = useRef(null);
 
   const showToast = (message) => {
@@ -249,6 +251,24 @@ const Feed = () => {
     showToast('Direct link copied to clipboard!');
   };
 
+  const handleToggleComments = (postId) => {
+    const isCurrentlyVisible = visibleComments[postId];
+    setVisibleComments((prev) => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+
+    if (!isCurrentlyVisible) {
+      setTimeout(() => {
+        const inputElement = document.getElementById(`comment-input-${postId}`);
+        if (inputElement) {
+          inputElement.focus();
+          inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  };
+
   const handleCommentChange = (postId, value) => {
     setCommentInputs({ ...commentInputs, [postId]: value });
   };
@@ -378,7 +398,13 @@ const Feed = () => {
                   <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
                     {post.likes.length} likes
                   </span>
-                  <button className="like-btn" style={{ marginLeft: '15px' }} onClick={() => handleSharePost(post._id)}>
+                  <button className="like-btn" style={{ marginLeft: '15px' }} onClick={() => handleToggleComments(post._id)}>
+                    💬
+                  </button>
+                  <span style={{ fontSize: '13px', color: 'var(--secondary-text)', marginRight: '15px' }}>
+                    {post.comments.length} comments
+                  </span>
+                  <button className="like-btn" onClick={() => handleSharePost(post._id)}>
                     🔗
                   </button>
                   <span style={{ fontSize: '13px', color: 'var(--secondary-text)', marginLeft: '15px' }}>
@@ -418,73 +444,78 @@ const Feed = () => {
                   </p>
                 )}
               </div>
-              <div className="comment-section">
-                {post.comments.map((comment) => (
-                  <div className="comment" key={comment._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      {comment.user.profilePicture ? (
-                        <img
-                          src={comment.user.profilePicture}
-                          alt="Avatar"
-                          className="post-avatar"
-                          style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <div className="post-avatar" style={{ width: '20px', height: '20px', marginRight: '8px' }}></div>
-                      )}
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <strong>{comment.user.username}</strong>
-                        {comment.user.isVerified && <span className="verified-badge">✓</span>}
-                        {editingCommentId === comment._id ? (
-                          <div style={{ marginLeft: '10px', display: 'flex', gap: '5px' }}>
-                            <input
-                              type="text"
-                              value={editCommentText}
-                              onChange={(e) => setEditCommentText(e.target.value)}
-                              style={{ padding: '2px 5px', fontSize: '12px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--card-bg)', color: 'var(--text-color)' }}
+              {visibleComments[post._id] && (
+                <>
+                  <div className="comment-section">
+                    {post.comments.map((comment) => (
+                      <div className="comment" key={comment._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          {comment.user.profilePicture ? (
+                            <img
+                              src={comment.user.profilePicture}
+                              alt="Avatar"
+                              className="post-avatar"
+                              style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'cover' }}
                             />
-                            <button className="delete-btn" style={{ color: '#0095f6', fontSize: '11px' }} onClick={() => handleSaveEditComment(post._id, comment._id)}>
-                              Save
-                            </button>
-                            <button className="delete-btn" style={{ fontSize: '11px' }} onClick={() => setEditingCommentId(null)}>
-                              Cancel
-                            </button>
+                          ) : (
+                            <div className="post-avatar" style={{ width: '20px', height: '20px', marginRight: '8px' }}></div>
+                          )}
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <strong>{comment.user.username}</strong>
+                            {comment.user.isVerified && <span className="verified-badge">✓</span>}
+                            {editingCommentId === comment._id ? (
+                              <div style={{ marginLeft: '10px', display: 'flex', gap: '5px' }}>
+                                <input
+                                  type="text"
+                                  value={editCommentText}
+                                  onChange={(e) => setEditCommentText(e.target.value)}
+                                  style={{ padding: '2px 5px', fontSize: '12px', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--card-bg)', color: 'var(--text-color)' }}
+                                />
+                                <button className="delete-btn" style={{ color: '#0095f6', fontSize: '11px' }} onClick={() => handleSaveEditComment(post._id, comment._id)}>
+                                  Save
+                                </button>
+                                <button className="delete-btn" style={{ fontSize: '11px' }} onClick={() => setEditingCommentId(null)}>
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <span style={{ marginLeft: '8px' }}>{comment.content}</span>
+                            )}
                           </div>
-                        ) : (
-                          <span style={{ marginLeft: '8px' }}>{comment.content}</span>
-                        )}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <button className="delete-btn" style={{ fontSize: '12px' }} onClick={() => handleLikeComment(post._id, comment._id)}>
+                            {comment.likes?.includes(user?.id) ? '❤️' : '🤍'}
+                            <span style={{ fontSize: '10px', marginLeft: '3px' }}>{comment.likes?.length || 0}</span>
+                          </button>
+                          {editingCommentId !== comment._id && user && user.id === comment.user._id && (
+                            <button className="delete-btn" style={{ fontSize: '12px', color: '#0095f6' }} onClick={() => handleStartEditComment(comment)}>
+                              Edit
+                            </button>
+                          )}
+                          {user && (user.id === comment.user._id || user.id === post.user._id) && (
+                            <button className="delete-btn" style={{ fontSize: '13px' }} onClick={() => handleDeleteComment(post._id, comment._id)}>
+                              ×
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <button className="delete-btn" style={{ fontSize: '12px' }} onClick={() => handleLikeComment(post._id, comment._id)}>
-                        {comment.likes?.includes(user?.id) ? '❤️' : '🤍'}
-                        <span style={{ fontSize: '10px', marginLeft: '3px' }}>{comment.likes?.length || 0}</span>
-                      </button>
-                      {editingCommentId !== comment._id && user && user.id === comment.user._id && (
-                        <button className="delete-btn" style={{ fontSize: '12px', color: '#0095f6' }} onClick={() => handleStartEditComment(comment)}>
-                          Edit
-                        </button>
-                      )}
-                      {user && (user.id === comment.user._id || user.id === post.user._id) && (
-                        <button className="delete-btn" style={{ fontSize: '13px' }} onClick={() => handleDeleteComment(post._id, comment._id)}>
-                          ×
-                        </button>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              {user && (
-                <form className="comment-form" onSubmit={(e) => handleCommentSubmit(e, post._id)}>
-                  <input
-                    type="text"
-                    placeholder="Add a comment..."
-                    value={commentInputs[post._id] || ''}
-                    onChange={(e) => handleCommentChange(post._id, e.target.value)}
-                    required
-                  />
-                  <button type="submit">Post</button>
-                </form>
+                  {user && (
+                    <form className="comment-form" onSubmit={(e) => handleCommentSubmit(e, post._id)}>
+                      <input
+                        id={`comment-input-${post._id}`}
+                        type="text"
+                        placeholder="Add a comment..."
+                        value={commentInputs[post._id] || ''}
+                        onChange={(e) => handleCommentChange(post._id, e.target.value)}
+                        required
+                      />
+                      <button type="submit">Post</button>
+                    </form>
+                  )}
+                </>
               )}
             </div>
           ))}
