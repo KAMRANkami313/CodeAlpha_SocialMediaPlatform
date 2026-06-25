@@ -26,7 +26,7 @@ const SuggestionsSidebar = ({ suggestions, onFollow }) => {
                 <span className="activity-indicator-dot"></span>
               )}
             </div>
-            <Link to={`/profile/${suggestion._id}`} className="suggestion-username" style={{ display: 'flex', alignItems: 'center', marginLeft: '8px' }}>
+            <Link to={`/profile/${suggestion._id}`} className="suggestion-username">
               {suggestion.username}
               <VerifiedBadge show={suggestion.isVerified} />
             </Link>
@@ -37,7 +37,9 @@ const SuggestionsSidebar = ({ suggestions, onFollow }) => {
         </div>
       ))}
       {suggestions.length === 0 && (
-        <div style={{ fontSize: '12px', color: '#8e8e8e' }}>No new suggestions</div>
+        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center', padding: 'var(--space-4) 0' }}>
+          No new suggestions
+        </div>
       )}
     </div>
   );

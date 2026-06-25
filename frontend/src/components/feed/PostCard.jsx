@@ -103,6 +103,8 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
     });
   };
 
+  const isLiked = post.likes.some(l => l._id === user?.id);
+
   return (
     <div className="post-card">
       {user && <PostViewTracker postId={post._id} />}
@@ -118,14 +120,14 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
               <span className="activity-indicator-dot"></span>
             )}
           </div>
-          <Link to={`/profile/${post.user._id}`} style={{ display: 'flex', alignItems: 'center', marginLeft: '8px' }}>
+          <Link to={`/profile/${post.user._id}`} style={{ display: 'flex', alignItems: 'center' }}>
             {post.user.username}
             <VerifiedBadge show={post.user.isVerified} />
           </Link>
         </div>
         {user && user.id === post.user._id && (
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button className="delete-btn" style={{ color: '#0095f6' }} onClick={() => handleStartEdit(post)}>
+          <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+            <button className="delete-btn" style={{ color: 'var(--accent)' }} onClick={() => handleStartEdit(post)}>
               Edit
             </button>
             <button className="delete-btn" onClick={() => handleDeletePost(post._id)}>
@@ -136,23 +138,23 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
       </div>
       {post.image && <img src={post.image} alt="Post content" className="post-image" />}
       <div className="post-actions" style={{ justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <button className="like-btn" onClick={() => handleLike(post._id)}>
-            {post.likes.some(l => l._id === user?.id) ? '❤️' : '🤍'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+          <button className={`like-btn ${isLiked ? 'liked' : ''}`} onClick={() => handleLike(post._id)}>
+            {isLiked ? '❤️' : '🤍'}
           </button>
           <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
             {post.likes.length} likes
           </span>
-          <button className="like-btn" style={{ marginLeft: '15px' }} onClick={() => handleToggleComments(post._id)}>
+          <button className="like-btn" onClick={() => handleToggleComments(post._id)}>
             💬
           </button>
-          <span style={{ fontSize: '13px', color: 'var(--secondary-text)', marginRight: '15px' }}>
+          <span className="post-action-info">
             {post.comments.length} comments
           </span>
           <button className="like-btn" onClick={() => onShare(post._id)}>
             🔗
           </button>
-          <span style={{ fontSize: '13px', color: 'var(--secondary-text)', marginLeft: '15px' }}>
+          <span className="post-action-info">
             👁️ {post.views?.length || 0} views
           </span>
         </div>
@@ -160,7 +162,6 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
           <button
             className="like-btn"
             onClick={() => handleSave(post._id)}
-            style={{ marginRight: 0 }}
           >
             {user.savedPosts?.includes(post._id) ? '🔖' : '📁'}
           </button>
@@ -169,19 +170,21 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
       <div className="post-content">
         {editingPostId === post._id ? (
           <div>
-            <div className="form-group" style={{ marginBottom: '10px' }}>
+            <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
               <textarea
                 value={editCaptionText}
                 onChange={(e) => setEditCaptionText(e.target.value)}
                 rows="2"
               />
             </div>
-            <button className="btn" style={{ width: 'auto', padding: '3px 12px', fontSize: '12px', marginRight: '10px' }} onClick={() => handleSaveEdit(post._id)}>
-              Save
-            </button>
-            <button className="btn" style={{ width: 'auto', padding: '3px 12px', fontSize: '12px', backgroundColor: '#dbdbdb', color: '#000' }} onClick={() => setEditingPostId(null)}>
-              Cancel
-            </button>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)' }} onClick={() => handleSaveEdit(post._id)}>
+                Save
+              </button>
+              <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={() => setEditingPostId(null)}>
+                Cancel
+              </button>
+            </div>
           </div>
         ) : (
           <p>

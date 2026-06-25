@@ -34,6 +34,9 @@ const StoryViewer = ({ activeStoryGroup, onClose }) => {
         <div className="story-progress-bar-bg">
           <div className="story-progress-bar-fg" style={{ width: `${storyProgress}%` }}></div>
         </div>
+        <button className="story-close-btn" onClick={onClose} aria-label="Close story">
+          ×
+        </button>
         <div className="story-header-info">
           <Avatar
             src={activeStoryGroup.user.profilePicture}

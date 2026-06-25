@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 import { postService } from '../../services/postService';
+import Avatar from '../common/Avatar';
 
 const CreatePostForm = ({ onPostCreated }) => {
+  const { user } = useContext(AuthContext);
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState('');
 
@@ -18,8 +21,16 @@ const CreatePostForm = ({ onPostCreated }) => {
   };
 
   return (
-    <div className="auth-card" style={{ marginBottom: '30px', textAlign: 'left' }}>
-      <h3>Create Post</h3>
+    <div className="auth-card" style={{ marginBottom: 'var(--space-6)', textAlign: 'left' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+        <Avatar
+          src={user?.profilePicture}
+          alt="Your Avatar"
+          className="post-avatar"
+          style={{ width: '40px', height: '40px' }}
+        />
+        <h3 style={{ margin: 0 }}>Create Post</h3>
+      </div>
       <form onSubmit={handleCreatePost}>
         <div className="form-group">
           <textarea

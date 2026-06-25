@@ -37,7 +37,7 @@ const ChatPane = ({ activePartner, user, messages, onMessageSent, onMessageDelet
   if (!activePartner) {
     return (
       <div className="chat-pane-wrapper">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#8e8e8e' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--secondary-text)', fontSize: 'var(--text-sm)' }}>
           Select a chat to begin messaging
         </div>
       </div>
@@ -56,13 +56,13 @@ const ChatPane = ({ activePartner, user, messages, onMessageSent, onMessageDelet
             <div
               key={m._id}
               className={`chat-bubble ${m.sender === user.id ? 'mine' : 'theirs'}`}
-              style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '10px' }}
+              style={{ position: 'relative' }}
             >
               {m.sender === user.id && (
                 <button
-                  className="delete-btn"
-                  style={{ fontSize: '10px', color: '#8e8e8e', background: 'none', border: 'none', cursor: 'pointer', padding: '0' }}
+                  className="chat-delete-btn"
                   onClick={() => handleDeleteMessage(m._id)}
+                  aria-label="Delete message"
                 >
                   ×
                 </button>
@@ -71,7 +71,7 @@ const ChatPane = ({ activePartner, user, messages, onMessageSent, onMessageDelet
                 <img
                   src={m.content}
                   alt="Shared media"
-                  style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '8px', objectFit: 'cover', display: 'block' }}
+                  className="chat-image"
                   onLoad={() => {
                     const chatContainer = document.querySelector('.chat-messages');
                     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;

@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
@@ -14,6 +14,9 @@ const Navbar = () => {
   const { notifications, fetchNotifications } = useNotifications(user);
   const unreadMessages = useUnreadMessages(user);
   useActivityHeartbeat(user);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
     <nav className="navbar">
@@ -35,14 +38,14 @@ const Navbar = () => {
               fetchNotifications={fetchNotifications}
             />
             <Link to={`/profile/${user.id}`}>Profile</Link>
-            <button onClick={toggleTheme} style={{ fontSize: '16px' }}>
+            <button onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'light' ? '🌙' : '☀️'}
             </button>
             <button onClick={logoutUser}>Log Out</button>
           </>
         ) : (
           <>
-            <button onClick={toggleTheme} style={{ fontSize: '16px' }}>
+            <button onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'light' ? '🌙' : '☀️'}
             </button>
             <Link to="/login">Login</Link>
@@ -50,6 +53,45 @@ const Navbar = () => {
           </>
         )}
       </div>
+
+      <button
+        className={`navbar-mobile-toggle ${mobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label="Toggle menu"
+        aria-expanded={mobileMenuOpen}
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      {mobileMenuOpen && (
+        <div className="navbar-mobile-menu" onClick={closeMobileMenu}>
+          <Link to="/">Home</Link>
+          {user ? (
+            <>
+              <Link to="/explore">Explore</Link>
+              <Link to="/messages">
+                Messages
+                {unreadMessages > 0 && <span className="notification-badge">{unreadMessages}</span>}
+              </Link>
+              <Link to={`/profile/${user.id}`}>Profile</Link>
+              <button onClick={toggleTheme}>
+                {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+              </button>
+              <button onClick={logoutUser}>Log Out</button>
+            </>
+          ) : (
+            <>
+              <button onClick={toggleTheme}>
+                {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+              </button>
+              <Link to="/login">Login</Link>
+              <Link to="/register">Register</Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

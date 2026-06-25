@@ -5,6 +5,13 @@ import { STORAGE_KEYS, SEARCH_DEBOUNCE_MS, RECENT_SEARCHES_LIMIT } from '../../u
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
 
+const SearchIcon = () => (
+  <svg className="search-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
 const SearchBar = ({ user }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -86,14 +93,17 @@ const SearchBar = ({ user }) => {
 
   return (
     <div className="search-container" ref={searchRef}>
-      <input
-        type="text"
-        placeholder="Search users..."
-        className="search-input"
-        value={searchQuery}
-        onFocus={() => setShowSearchDropdown(true)}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
+      <div className="search-input-wrapper">
+        <SearchIcon />
+        <input
+          type="text"
+          placeholder="Search users..."
+          className="search-input"
+          value={searchQuery}
+          onFocus={() => setShowSearchDropdown(true)}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
       {showSearchDropdown && (
         <div className="search-dropdown">
           {searchQuery ? (
@@ -102,7 +112,6 @@ const SearchBar = ({ user }) => {
                 key={u._id}
                 to={`/profile/${u._id}`}
                 className="search-item"
-                style={{ display: 'flex', alignItems: 'center' }}
                 onClick={() => handleSelectUser(u)}
               >
                 <Avatar
@@ -120,11 +129,11 @@ const SearchBar = ({ user }) => {
             <div>
               {recentSearches.length > 0 ? (
                 <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 15px', borderBottom: '1px solid var(--border-light)' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--secondary-text)' }}>Recent</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--border-light)' }}>
+                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent</span>
                     <button
                       onClick={handleClearAllRecents}
-                      style={{ background: 'none', border: 'none', color: '#0095f6', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', padding: '0' }}
+                      style={{ color: 'var(--accent)', fontSize: 'var(--text-xs)', fontWeight: 600, padding: '0' }}
                     >
                       Clear All
                     </button>
@@ -150,7 +159,7 @@ const SearchBar = ({ user }) => {
                       </div>
                       <button
                         className="delete-btn"
-                        style={{ fontSize: '14px', marginRight: '5px' }}
+                        style={{ fontSize: 'var(--text-lg)', marginRight: 'var(--space-1)', color: 'var(--secondary-text)' }}
                         onClick={(e) => handleRemoveRecent(e, u._id)}
                       >
                         ×
@@ -159,7 +168,7 @@ const SearchBar = ({ user }) => {
                   ))}
                 </>
               ) : (
-                <div style={{ padding: '20px', fontSize: '12px', color: 'var(--secondary-text)', textAlign: 'center' }}>
+                <div style={{ padding: 'var(--space-6) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center' }}>
                   No recent searches
                 </div>
               )}

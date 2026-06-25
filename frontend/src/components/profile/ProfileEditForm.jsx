@@ -42,7 +42,11 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
 
   return (
     <form onSubmit={handleUpdateProfile}>
-      {error && <p style={{ color: 'red', fontSize: '13px' }}>{error}</p>}
+      {error && (
+        <p style={{ color: 'var(--danger)', fontSize: 'var(--text-sm)', margin: '0 0 var(--space-4) 0', padding: 'var(--space-2) var(--space-3)', background: 'rgba(239, 68, 68, 0.08)', borderRadius: 'var(--radius-sm)' }}>
+          {error}
+        </p>
+      )}
       <div className="form-group">
         <input
           type="text"
@@ -76,17 +80,19 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
           onChange={(e) => setBioInput(e.target.value)}
         />
       </div>
-      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
         <input
           type="checkbox"
           checked={isVerifiedInput}
           onChange={(e) => setIsVerifiedInput(e.target.checked)}
-          style={{ width: 'auto' }}
+          style={{ width: 'auto', accentColor: 'var(--accent)' }}
         />
-        <label style={{ fontSize: '14px' }}>Request Verification Checkmark Badge</label>
+        <label style={{ fontSize: 'var(--text-sm)' }}>Request Verification Checkmark Badge</label>
       </div>
-      <button type="submit" className="btn" style={{ width: 'auto', marginRight: '10px' }}>Save Changes</button>
-      <button type="button" className="btn" style={{ width: 'auto', backgroundColor: '#dbdbdb', color: '#000' }} onClick={onCancel}>Cancel</button>
+      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+        <button type="submit" className="btn" style={{ width: 'auto' }}>Save Changes</button>
+        <button type="button" className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onCancel}>Cancel</button>
+      </div>
     </form>
   );
 };

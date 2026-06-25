@@ -104,9 +104,9 @@ const Feed = () => {
       )}
 
       {(currentTag || targetPostId) && (
-        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="feed-tag-header">
           <h2>{targetPostId ? 'Showing shared post' : `Showing posts for #${currentTag}`}</h2>
-          <button className="btn" style={{ width: 'auto', padding: '5px 15px' }} onClick={() => setSearchParams({})}>
+          <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)' }} onClick={() => setSearchParams({})}>
             Show All Feed
           </button>
         </div>

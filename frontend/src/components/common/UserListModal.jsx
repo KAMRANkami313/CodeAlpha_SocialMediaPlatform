@@ -7,13 +7,13 @@ const UserListModal = ({ title, users = [], onClose, emptyMessage = null }) => {
   return (
     <Modal title={title} onClose={onClose}>
       {users.map((user) => (
-        <div key={user._id} className="suggestion-item" style={{ marginBottom: '15px' }}>
+        <div key={user._id} className="suggestion-item" style={{ marginBottom: 'var(--space-3)', padding: 'var(--space-2)', borderRadius: 'var(--radius-md)' }}>
           <div className="suggestion-info">
             <Avatar
               src={user.profilePicture}
               alt="Avatar"
               className="suggestion-avatar"
-              style={{ width: '32px', height: '32px' }}
+              style={{ width: '40px', height: '40px' }}
             />
             <Link
               to={`/profile/${user._id}`}
@@ -28,7 +28,7 @@ const UserListModal = ({ title, users = [], onClose, emptyMessage = null }) => {
         </div>
       ))}
       {users.length === 0 && emptyMessage && (
-        <div style={{ textAlign: 'center', color: '#8e8e8e', fontSize: '14px' }}>
+        <div style={{ textAlign: 'center', color: 'var(--secondary-text)', fontSize: 'var(--text-sm)', padding: 'var(--space-6) 0' }}>
           {emptyMessage}
         </div>
       )}

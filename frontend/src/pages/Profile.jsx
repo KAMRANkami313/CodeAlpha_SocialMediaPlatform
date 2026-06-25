@@ -70,7 +70,7 @@ const Profile = () => {
   const displayedPosts = activeTab === 'posts' ? posts : profile.savedPosts;
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: '1024px' }}>
       <ProfileHeader
         profile={profile}
         posts={posts}
@@ -104,30 +104,32 @@ const Profile = () => {
         </div>
       )}
 
-      {displayedPosts.map((post) => (
-        <div className="post-card" key={post._id}>
-          <div className="post-header">
-            <Avatar
-              src={post.user.profilePicture}
-              alt="Avatar"
-              className="post-avatar"
-            />
-            <strong style={{ display: 'flex', alignItems: 'center' }}>
-              {post.user.username}
-              <VerifiedBadge show={post.user.isVerified} />
-            </strong>
+      <div className="profile-posts-grid">
+        {displayedPosts.map((post) => (
+          <div className="post-card" key={post._id}>
+            <div className="post-header">
+              <Avatar
+                src={post.user.profilePicture}
+                alt="Avatar"
+                className="post-avatar"
+              />
+              <strong style={{ display: 'flex', alignItems: 'center' }}>
+                {post.user.username}
+                <VerifiedBadge show={post.user.isVerified} />
+              </strong>
+            </div>
+            {post.image && <img src={post.image} alt="Post content" className="post-image" />}
+            <div className="post-actions" style={{ padding: 'var(--space-3) var(--space-4) 0 var(--space-4)' }}>
+              <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
+                {post.likes.length} likes
+              </span>
+            </div>
+            <div className="post-content">
+              <p>{post.caption}</p>
+            </div>
           </div>
-          {post.image && <img src={post.image} alt="Post content" className="post-image" />}
-          <div className="post-actions" style={{ padding: '15px 15px 0 15px' }}>
-            <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
-              {post.likes.length} likes
-            </span>
-          </div>
-          <div className="post-content">
-            <p>{post.caption}</p>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {activeLikers && (
         <LikersModal likers={activeLikers} onClose={() => setActiveLikers(null)} />

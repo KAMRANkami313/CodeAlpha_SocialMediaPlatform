@@ -25,13 +25,15 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
   return (
     <>
       <div className="stories-container">
-        <div className="story-circle-wrapper" onClick={() => setStoryCreateModal(true)}>
-          <Avatar
-            src={user.profilePicture}
-            alt="My Avatar"
-            className="story-circle"
-            style={{ borderColor: '#dbdbdb' }}
-          />
+        <div className="story-circle-wrapper create-story" onClick={() => setStoryCreateModal(true)}>
+          <div style={{ position: 'relative' }}>
+            <Avatar
+              src={user.profilePicture}
+              alt="My Avatar"
+              className="story-circle"
+            />
+            <span className="story-add-badge">+</span>
+          </div>
           <span className="story-username">Add Story</span>
         </div>
 

@@ -22,7 +22,7 @@ const NotificationDropdown = ({ notifications, fetchNotifications }) => {
 
   return (
     <>
-      <button onClick={handleToggleNotifications} style={{ position: 'relative' }}>
+      <button onClick={handleToggleNotifications} style={{ position: 'relative' }} aria-label="Notifications">
         Notifications
         {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
       </button>
@@ -47,7 +47,7 @@ const NotificationDropdown = ({ notifications, fetchNotifications }) => {
             </div>
           ))}
           {notifications.length === 0 && (
-            <div style={{ padding: '15px', fontSize: '12px', color: '#8e8e8e', textAlign: 'center' }}>
+            <div style={{ padding: 'var(--space-6) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center' }}>
               No notifications yet
             </div>
           )}

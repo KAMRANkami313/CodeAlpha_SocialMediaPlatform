@@ -20,34 +20,39 @@ const Login = () => {
   };
 
   return (
-    <div className="container">
-      <div className="auth-card">
-        <h2>Login</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" className="btn">Log In</button>
-        </form>
-        <p style={{ marginTop: '20px' }}>
-          Don't have an account? <Link to="/register">Sign up</Link>
-        </p>
+    <div className="auth-page-wrapper">
+      <div className="container">
+        <div className="auth-card">
+          <h2>Welcome back</h2>
+          <p style={{ color: 'var(--secondary-text)', fontSize: 'var(--text-sm)', margin: '0 0 var(--space-6) 0' }}>
+            Sign in to continue to SocialApp
+          </p>
+          {error && <p className="auth-error">{error}</p>}
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" className="btn">Log In</button>
+          </form>
+          <p className="auth-switch-text">
+            Don't have an account? <Link to="/register">Sign up</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

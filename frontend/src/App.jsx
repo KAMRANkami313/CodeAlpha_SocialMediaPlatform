@@ -12,15 +12,18 @@ import Explore from './pages/Explore';
 const AppContent = () => {
   return (
     <Router>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Feed />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/profile/:id" element={<Profile />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/explore" element={<Explore />} />
-      </Routes>
+      <main id="main-content">
+        <Routes>
+          <Route path="/" element={<Feed />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/explore" element={<Explore />} />
+        </Routes>
+      </main>
     </Router>
   );
 };

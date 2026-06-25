@@ -19,21 +19,23 @@ const ProfileHeader = ({
 }) => {
   return (
     <div className="profile-header">
-      <Avatar
-        src={profile.profilePicture}
-        alt="Profile Avatar"
-        className="profile-avatar"
-      />
+      <div className="profile-avatar-wrapper">
+        <Avatar
+          src={profile.profilePicture}
+          alt="Profile Avatar"
+          className="profile-avatar"
+        />
+      </div>
       <div className="profile-info">
-        <h2 style={{ display: 'flex', alignItems: 'center' }}>
+        <h2>
           {profile.username}
           <VerifiedBadge show={profile.isVerified} />
           {user && !isMe && (
-            <div style={{ display: 'flex', gap: '10px', marginLeft: '20px' }}>
-              <button className="btn" style={{ width: 'auto', padding: '5px 15px' }} onClick={onFollowUnfollow}>
+            <div className="profile-action-buttons">
+              <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)' }} onClick={onFollowUnfollow}>
                 {isFollowing ? 'Unfollow' : 'Follow'}
               </button>
-              <button className="btn" style={{ width: 'auto', padding: '5px 15px', backgroundColor: '#dbdbdb', color: '#000' }} onClick={onMessage}>
+              <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onMessage}>
                 Message
               </button>
             </div>
@@ -54,8 +56,8 @@ const ProfileHeader = ({
             <strong>{profile.following.length}</strong> following
           </span>
           {isMe && (
-            <span style={{ fontSize: '14px', color: 'var(--secondary-text)' }}>
-              🔒 <strong>{profile.views?.length || 0}</strong> views
+            <span style={{ color: 'var(--secondary-text)' }}>
+              <strong>{profile.views?.length || 0}</strong> views
             </span>
           )}
         </div>
@@ -71,7 +73,7 @@ const ProfileHeader = ({
           <div className="profile-bio">
             <p>{profile.bio || 'No bio yet.'}</p>
             {isMe && (
-              <button className="btn" style={{ width: 'auto', padding: '5px 15px', backgroundColor: '#dbdbdb', color: '#000' }} onClick={onEdit}>Edit Profile</button>
+              <button className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onEdit}>Edit Profile</button>
             )}
           </div>
         )}

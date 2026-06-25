@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import API from '../services/api';
+import { exploreService } from '../services/exploreService';
+import Avatar from '../components/common/Avatar';
+import VerifiedBadge from '../components/common/VerifiedBadge';
 
 const Explore = () => {
   const [exploreData, setExploreData] = useState(null);
@@ -9,7 +11,7 @@ const Explore = () => {
   useEffect(() => {
     const fetchExplore = async () => {
       try {
-        const res = await API.get('/explore');
+        const res = await exploreService.getExploreData();
         setExploreData(res.data);
       } catch (err) {
         console.error(err);
@@ -23,27 +25,24 @@ const Explore = () => {
   const { trendingPosts, discoverUsers, trendingTags } = exploreData;
 
   return (
-    <div className="container" style={{ maxWidth: '935px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '30px', marginBottom: '40px' }}>
+    <div className="container" style={{ maxWidth: '1024px' }}>
+            <div className="explore-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 'var(--space-8)', marginBottom: 'var(--space-10)' }}>
         <div>
-          <h3>Discover People</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <h3 className="explore-section-title">Discover People</h3>
+          <div className="explore-grid">
             {discoverUsers.map((u) => (
-              <div key={u._id} className="auth-card" style={{ padding: '20px', textAlign: 'center' }}>
-                {u.profilePicture ? (
-                  <img src={u.profilePicture} alt="Avatar" className="profile-avatar" style={{ width: '80px', height: '80px', margin: '0 auto 10px auto', objectFit: 'cover' }} />
-                ) : (
-                  <div className="profile-avatar" style={{ width: '80px', height: '80px', margin: '0 auto 10px auto' }}></div>
-                )}
-                <Link
-                  to={`/profile/${u._id}`}
-                  style={{ fontWeight: 'bold', textDecoration: 'none', color: '#262626', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}
-                >
+              <div key={u._id} className="explore-user-card">
+                <Avatar
+                  src={u.profilePicture}
+                  alt="Avatar"
+                  className="explore-user-avatar"
+                />
+                <Link to={`/profile/${u._id}`} className="explore-user-name">
                   {u.username}
-                  {u.isVerified && <span className="verified-badge">✓</span>}
+                  <VerifiedBadge show={u.isVerified} />
                 </Link>
-                <p style={{ fontSize: '12px', color: '#8e8e8e', margin: '0 0 10px 0', height: '36px', overflow: 'hidden' }}>{u.bio || 'No bio yet'}</p>
-                <button className="btn" style={{ padding: '5px 15px', fontSize: '13px' }} onClick={() => navigate(`/profile/${u._id}`)}>
+                <p className="explore-user-bio">{u.bio || 'No bio yet'}</p>
+                <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)', fontSize: 'var(--text-xs)' }} onClick={() => navigate(`/profile/${u._id}`)}>
                   View Profile
                 </button>
               </div>
@@ -52,48 +51,51 @@ const Explore = () => {
         </div>
 
         <div>
-          <h3>Trending Tags</h3>
-          <div className="auth-card" style={{ padding: '20px', textAlign: 'left' }}>
+          <h3 className="explore-section-title">Trending Tags</h3>
+          <div className="auth-card" style={{ padding: 'var(--space-5)', textAlign: 'left' }}>
             {trendingTags.map((item) => (
               <div
                 key={item.tag}
-                style={{ padding: '10px 0', borderBottom: '1px solid #efefef', cursor: 'pointer' }}
+                className="explore-tag-item"
                 onClick={() => navigate(`/?tag=${item.tag}`)}
               >
-                <span className="hashtag" style={{ fontWeight: 'bold' }}>#{item.tag}</span>
-                <div style={{ fontSize: '11px', color: '#8e8e8e', marginTop: '3px' }}>{item.count} posts</div>
+                <span className="hashtag" style={{ fontWeight: 600 }}>#{item.tag}</span>
+                <div className="explore-tag-count">{item.count} posts</div>
               </div>
             ))}
             {trendingTags.length === 0 && (
-              <div style={{ fontSize: '13px', color: '#8e8e8e', textAlign: 'center' }}>No trending tags yet</div>
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center', padding: 'var(--space-4) 0' }}>
+                No trending tags yet
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      <h3>Trending Posts</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+      <h3 className="explore-section-title">Trending Posts</h3>
+      <div className="explore-grid">
         {trendingPosts.map((post) => (
           <div key={post._id} className="post-card" style={{ margin: 0, overflow: 'hidden' }}>
             <div className="post-header">
-              {post.user.profilePicture ? (
-                <img src={post.user.profilePicture} alt="Avatar" className="post-avatar" style={{ width: '24px', height: '24px', objectFit: 'cover' }} />
-              ) : (
-                <div className="post-avatar" style={{ width: '24px', height: '24px' }}></div>
-              )}
-              <Link to={`/profile/${post.user._id}`} style={{ fontSize: '13px', textDecoration: 'none', color: '#262626', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                src={post.user.profilePicture}
+                alt="Avatar"
+                className="post-avatar"
+                style={{ width: '32px', height: '32px' }}
+              />
+              <Link to={`/profile/${post.user._id}`} className="post-header-link" style={{ fontSize: 'var(--text-sm)', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
                 {post.user.username}
-                {post.user.isVerified && <span className="verified-badge">✓</span>}
+                <VerifiedBadge show={post.user.isVerified} />
               </Link>
             </div>
             {post.image ? (
-              <img src={post.image} alt="Trending content" style={{ width: '100%', height: '180px', objectFit: 'cover', display: 'block' }} />
+              <img src={post.image} alt="Trending content" style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }} />
             ) : (
-              <div style={{ padding: '20px', height: '140px', overflow: 'hidden', fontSize: '14px', borderTop: '1px solid #efefef', borderBottom: '1px solid #efefef' }}>
+              <div style={{ padding: 'var(--space-5)', height: '140px', overflow: 'hidden', fontSize: 'var(--text-sm)', borderTop: '1px solid var(--border-light)', borderBottom: '1px solid var(--border-light)', color: 'var(--text-color)' }}>
                 {post.caption}
               </div>
             )}
-            <div style={{ padding: '10px 15px', fontSize: '13px', borderTop: '1px solid #efefef' }}>
+            <div style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', borderTop: '1px solid var(--border-light)', color: 'var(--secondary-text)' }}>
               ❤️ {post.likes.length} likes
             </div>
           </div>
