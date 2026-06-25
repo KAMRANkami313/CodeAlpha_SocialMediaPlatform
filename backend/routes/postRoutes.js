@@ -5,11 +5,10 @@ const {
   getAllPosts,
   getUserPosts,
   deletePost,
-  likeUnlikePost,
   getPostById,
-  updatePost,
-  trackImpression
+  updatePost
 } = require('../controllers/postController');
+const { likeUnlikePost, trackImpression } = require('../controllers/postEngagementController');
 const { addComment, deleteComment, likeUnlikeComment, updateComment } = require('../controllers/commentController');
 const auth = require('../middlewares/auth');
 
