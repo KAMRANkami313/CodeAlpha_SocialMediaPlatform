@@ -74,13 +74,13 @@ const getProfile = async (req, res) => {
 
     userProfile = await User.findById(req.params.id)
       .select('-password')
-      .populate('followers', 'username profilePicture isVerified')
-      .populate('following', 'username profilePicture isVerified')
+      .populate('followers', 'username profilePicture isVerified lastActivityTimestamp')
+      .populate('following', 'username profilePicture isVerified lastActivityTimestamp')
       .populate({
         path: 'savedPosts',
         populate: {
           path: 'user',
-          select: 'username profilePicture isVerified'
+          select: 'username profilePicture isVerified lastActivityTimestamp'
         }
       });
 
@@ -210,11 +210,20 @@ const getSuggestedUsers = async (req, res) => {
     const currentUser = await User.findById(req.user.id);
     const excludedUsers = [...currentUser.following, req.user.id];
     const suggestions = await User.find({ _id: { $nin: excludedUsers } })
-      .select('username profilePicture bio isVerified')
+      .select('username profilePicture bio isVerified lastActivityTimestamp')
       .limit(5);
     res.status(200).json(suggestions);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+const registerActivityPing = async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { lastActivityTimestamp: Date.now() });
+    res.status(200).json({ status: 'active' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -227,5 +236,6 @@ module.exports = {
   unfollowUser,
   saveUnsavePost,
   searchUsers,
-  getSuggestedUsers
+  getSuggestedUsers,
+  registerActivityPing
 };

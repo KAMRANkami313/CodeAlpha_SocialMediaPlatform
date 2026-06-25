@@ -273,6 +273,12 @@ const Feed = () => {
     setCommentInputs({ ...commentInputs, [postId]: value });
   };
 
+  const evaluateActivityStatus = (lastActivityDate) => {
+    if (!lastActivityDate) return false;
+    const difference = Date.now() - new Date(lastActivityDate).getTime();
+    return difference < 60000;
+  };
+
   const renderCaption = (text) => {
     const parts = text.split(/(\s+)/);
     return parts.map((part, index) => {
@@ -363,17 +369,22 @@ const Feed = () => {
               {user && <PostViewTracker postId={post._id} />}
               <div className="post-header" style={{ justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {post.user.profilePicture ? (
-                    <img
-                      src={post.user.profilePicture}
-                      alt="Avatar"
-                      className="post-avatar"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <div className="post-avatar"></div>
-                  )}
-                  <Link to={`/profile/${post.user._id}`} style={{ display: 'flex', alignItems: 'center' }}>
+                  <div className="avatar-container">
+                    {post.user.profilePicture ? (
+                      <img
+                        src={post.user.profilePicture}
+                        alt="Avatar"
+                        className="post-avatar"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div className="post-avatar"></div>
+                    )}
+                    {evaluateActivityStatus(post.user.lastActivityTimestamp) && (
+                      <span className="activity-indicator-dot"></span>
+                    )}
+                  </div>
+                  <Link to={`/profile/${post.user._id}`} style={{ display: 'flex', alignItems: 'center', marginLeft: '8px' }}>
                     {post.user.username}
                     {post.user.isVerified && <span className="verified-badge">✓</span>}
                   </Link>
@@ -530,17 +541,22 @@ const Feed = () => {
             {suggestions.map((suggestion) => (
               <div className="suggestion-item" key={suggestion._id}>
                 <div className="suggestion-info">
-                  {suggestion.profilePicture ? (
-                    <img
-                      src={suggestion.profilePicture}
-                      alt="Avatar"
-                      className="suggestion-avatar"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <div className="suggestion-avatar"></div>
-                  )}
-                  <Link to={`/profile/${suggestion._id}`} className="suggestion-username" style={{ display: 'flex', alignItems: 'center' }}>
+                  <div className="suggestion-avatar-wrapper">
+                    {suggestion.profilePicture ? (
+                      <img
+                        src={suggestion.profilePicture}
+                        alt="Avatar"
+                        className="suggestion-avatar"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div className="suggestion-avatar"></div>
+                    )}
+                    {evaluateActivityStatus(suggestion.lastActivityTimestamp) && (
+                      <span className="activity-indicator-dot"></span>
+                    )}
+                  </div>
+                  <Link to={`/profile/${suggestion._id}`} className="suggestion-username" style={{ display: 'flex', alignItems: 'center', marginLeft: '8px' }}>
                     {suggestion.username}
                     {suggestion.isVerified && <span className="verified-badge">✓</span>}
                   </Link>

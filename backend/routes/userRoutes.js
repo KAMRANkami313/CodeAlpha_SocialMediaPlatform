@@ -9,7 +9,8 @@ const {
   unfollowUser,
   saveUnsavePost,
   searchUsers,
-  getSuggestedUsers
+  getSuggestedUsers,
+  registerActivityPing
 } = require('../controllers/userController');
 const auth = require('../middlewares/auth');
 
@@ -22,5 +23,6 @@ router.put('/profile', auth, updateProfile);
 router.post('/follow/:id', auth, followUser);
 router.post('/unfollow/:id', auth, unfollowUser);
 router.post('/save/:postId', auth, saveUnsavePost);
+router.put('/ping', auth, registerActivityPing);
 
 module.exports = router;

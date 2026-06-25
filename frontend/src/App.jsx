@@ -90,6 +90,20 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    const transmitHeartbeat = async () => {
+      try {
+        await API.put('/users/ping');
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    transmitHeartbeat();
+    const heartbeatInterval = setInterval(transmitHeartbeat, 30000);
+    return () => clearInterval(heartbeatInterval);
+  }, [user]);
+
   const handleSelectUser = (profileUser) => {
     setSearchQuery('');
     setSearchResults([]);

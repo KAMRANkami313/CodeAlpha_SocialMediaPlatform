@@ -47,7 +47,11 @@ const userSchema = new mongoose.Schema({
   views: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }]
+  }],
+  lastActivityTimestamp: {
+    type: Date,
+    default: Date.now
+  }
 }, {
   timestamps: true
 });

@@ -767,3 +767,30 @@ body {
   padding: 10px;
   border-radius: 4px;
 }
+
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.activity-indicator-dot {
+  position: absolute;
+  bottom: 0px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  border: 1.5px solid var(--card-bg);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.suggestion-avatar-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.suggestion-avatar-wrapper .activity-indicator-dot {
+  bottom: 5px;
+  right: 10px;
+}
