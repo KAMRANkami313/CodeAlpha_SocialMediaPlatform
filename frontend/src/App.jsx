@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './context/AuthContext';
 import { ThemeContext, ThemeProvider } from './context/ThemeContext';
@@ -17,6 +17,31 @@ const Navbar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    if (user) {
+      const stored = localStorage.getItem(`recent_searches_${user.id}`);
+      if (stored) {
+        setRecentSearches(JSON.parse(stored));
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     const delaySearch = setTimeout(async () => {
@@ -45,15 +70,60 @@ const Navbar = () => {
     }
   };
 
+  const fetchUnreadMessagesCount = async () => {
+    if (!user) return;
+    try {
+      const res = await API.get('/messages/unread-count');
+      setUnreadMessages(res.data.unreadCount);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000);
+    fetchUnreadMessagesCount();
+    const interval = setInterval(() => {
+      fetchNotifications();
+      fetchUnreadMessagesCount();
+    }, 10000);
     return () => clearInterval(interval);
   }, [user]);
 
-  const handleSelectUser = () => {
+  const handleSelectUser = (profileUser) => {
     setSearchQuery('');
     setSearchResults([]);
+    setShowSearchDropdown(false);
+
+    if (user) {
+      const key = `recent_searches_${user.id}`;
+      let currentRecents = [...recentSearches];
+      currentRecents = currentRecents.filter(u => u._id !== profileUser._id);
+      currentRecents = [profileUser, ...currentRecents].slice(0, 5);
+      setRecentSearches(currentRecents);
+      localStorage.setItem(key, JSON.stringify(currentRecents));
+    }
+  };
+
+  const handleRemoveRecent = (e, profileId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (user) {
+      const key = `recent_searches_${user.id}`;
+      const filtered = recentSearches.filter(u => u._id !== profileId);
+      setRecentSearches(filtered);
+      localStorage.setItem(key, JSON.stringify(filtered));
+    }
+  };
+
+  const handleClearAllRecents = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (user) {
+      const key = `recent_searches_${user.id}`;
+      setRecentSearches([]);
+      localStorage.removeItem(key);
+    }
   };
 
   const handleToggleNotifications = async () => {
@@ -74,40 +144,96 @@ const Navbar = () => {
     <nav className="navbar">
       <Link to="/" className="navbar-brand">SocialApp</Link>
 
-      <div className="search-container">
+      <div className="search-container" ref={searchRef}>
         <input
           type="text"
           placeholder="Search users..."
           className="search-input"
           value={searchQuery}
+          onFocus={() => setShowSearchDropdown(true)}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        {searchResults.length > 0 && (
+        {showSearchDropdown && (
           <div className="search-dropdown">
-            {searchResults.map((u) => (
-              <Link
-                key={u._id}
-                to={`/profile/${u._id}`}
-                className="search-item"
-                style={{ display: 'flex', alignItems: 'center' }}
-                onClick={handleSelectUser}
-              >
-                {u.profilePicture ? (
-                  <img
-                    src={u.profilePicture}
-                    alt="Avatar"
-                    className="search-item-avatar"
-                    style={{ objectFit: 'cover' }}
-                  />
+            {searchQuery ? (
+              searchResults.map((u) => (
+                <Link
+                  key={u._id}
+                  to={`/profile/${u._id}`}
+                  className="search-item"
+                  style={{ display: 'flex', alignItems: 'center' }}
+                  onClick={() => handleSelectUser(u)}
+                >
+                  {u.profilePicture ? (
+                    <img
+                      src={u.profilePicture}
+                      alt="Avatar"
+                      className="search-item-avatar"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div className="search-item-avatar"></div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {u.username}
+                    {u.isVerified && <span className="verified-badge">✓</span>}
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div>
+                {recentSearches.length > 0 ? (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 15px', borderBottom: '1px solid var(--border-light)' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--secondary-text)' }}>Recent</span>
+                      <button
+                        onClick={handleClearAllRecents}
+                        style={{ background: 'none', border: 'none', color: '#0095f6', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', padding: '0' }}
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                    {recentSearches.map((u) => (
+                      <Link
+                        key={u._id}
+                        to={`/profile/${u._id}`}
+                        className="search-item"
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                        onClick={() => setShowSearchDropdown(false)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          {u.profilePicture ? (
+                            <img
+                              src={u.profilePicture}
+                              alt="Avatar"
+                              className="search-item-avatar"
+                              style={{ objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <div className="search-item-avatar"></div>
+                          )}
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            {u.username}
+                            {u.isVerified && <span className="verified-badge">✓</span>}
+                          </div>
+                        </div>
+                        <button
+                          className="delete-btn"
+                          style={{ fontSize: '14px', marginRight: '5px' }}
+                          onClick={(e) => handleRemoveRecent(e, u._id)}
+                        >
+                          ×
+                        </button>
+                      </Link>
+                    ))}
+                  </>
                 ) : (
-                  <div className="search-item-avatar"></div>
+                  <div style={{ padding: '20px', fontSize: '12px', color: 'var(--secondary-text)', textAlign: 'center' }}>
+                    No recent searches
+                  </div>
                 )}
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {u.username}
-                  {u.isVerified && <span className="verified-badge">✓</span>}
-                </div>
-              </Link>
-            ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -117,7 +243,10 @@ const Navbar = () => {
         {user ? (
           <>
             <Link to="/explore">Explore</Link>
-            <Link to="/messages">Messages</Link>
+            <Link to="/messages" style={{ position: 'relative' }}>
+              Messages
+              {unreadMessages > 0 && <span className="notification-badge">{unreadMessages}</span>}
+            </Link>
             <button onClick={handleToggleNotifications} style={{ position: 'relative' }}>
               Notifications
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}

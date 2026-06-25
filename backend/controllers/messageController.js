@@ -20,6 +20,10 @@ const sendMessage = async (req, res) => {
 const getConversation = async (req, res) => {
   try {
     const otherUserId = req.params.otherUserId;
+    await Message.updateMany(
+      { sender: otherUserId, receiver: req.user.id, read: false },
+      { read: true }
+    );
     const messages = await Message.find({
       $or: [
         { sender: req.user.id, receiver: otherUserId },
@@ -67,9 +71,19 @@ const deleteMessage = async (req, res) => {
   }
 };
 
+const getUnreadMessagesCount = async (req, res) => {
+  try {
+    const count = await Message.countDocuments({ receiver: req.user.id, read: false });
+    res.status(200).json({ unreadCount: count });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   sendMessage,
   getConversation,
   getConversationsList,
-  deleteMessage
+  deleteMessage,
+  getUnreadCount: getUnreadMessagesCount
 };

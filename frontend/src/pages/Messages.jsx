@@ -81,6 +81,14 @@ const Messages = () => {
     }
   };
 
+  const isImageURL = (url) => {
+    return (
+      url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null ||
+      url.startsWith('https://images.unsplash.com') ||
+      url.startsWith('https://picsum.photos')
+    );
+  };
+
   return (
     <div className="container" style={{ maxWidth: '935px' }}>
       <div className="chat-layout">
@@ -136,14 +144,26 @@ const Messages = () => {
                         ×
                       </button>
                     )}
-                    <div>{m.content}</div>
+                    {isImageURL(m.content) ? (
+                      <img
+                        src={m.content}
+                        alt="Shared media"
+                        style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '8px', objectFit: 'cover', display: 'block' }}
+                        onLoad={() => {
+                          const chatContainer = document.querySelector('.chat-messages');
+                          if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                        }}
+                      />
+                    ) : (
+                      <div>{m.content}</div>
+                    )}
                   </div>
                 ))}
               </div>
               <form className="chat-form" onSubmit={handleSendMessage}>
                 <input
                   type="text"
-                  placeholder="Type a message..."
+                  placeholder="Type a message or paste image URL..."
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   required
