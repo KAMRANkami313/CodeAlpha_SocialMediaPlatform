@@ -1,17 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const { register, login } = require('../controllers/authController');
+const { getProfile, updateProfile } = require('../controllers/userProfileController');
+const { followUser, unfollowUser } = require('../controllers/followController');
 const {
-  register,
-  login,
-  getProfile,
-  updateProfile,
-  followUser,
-  unfollowUser,
   saveUnsavePost,
   searchUsers,
   getSuggestedUsers,
   registerActivityPing
-} = require('../controllers/userController');
+} = require('../controllers/userInteractionController');
 const auth = require('../middlewares/auth');
 
 router.post('/register', register);
