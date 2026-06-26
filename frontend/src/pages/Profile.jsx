@@ -7,6 +7,8 @@ import Avatar from '../components/common/Avatar';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import LikersModal from '../components/common/LikersModal';
 import UserListModal from '../components/common/UserListModal';
+import EmptyState from '../components/common/EmptyState';
+import { ProfileSkeleton } from '../components/common/Skeleton';
 import ProfileHeader from '../components/profile/ProfileHeader';
 
 const Profile = () => {
@@ -68,7 +70,13 @@ const Profile = () => {
     setUserListTitle(title);
   };
 
-  if (!profile) return <div className="container">Loading profile...</div>;
+  if (!profile) {
+    return (
+      <div className="container" style={{ maxWidth: '1024px' }}>
+        <ProfileSkeleton />
+      </div>
+    );
+  }
 
   const isMe = user?.id === profile._id;
   const isFollowing = profile.followers.some(f => f._id === user?.id);
@@ -111,6 +119,13 @@ const Profile = () => {
       )}
 
       <div className="profile-posts-grid">
+        {displayedPosts.length === 0 && (
+          <EmptyState
+            icon={activeTab === 'saved' ? '🔖' : '📝'}
+            title={activeTab === 'saved' ? 'No saved posts' : 'No posts yet'}
+            message={activeTab === 'saved' ? 'Posts you save will appear here.' : 'When this user shares posts, they will appear here.'}
+          />
+        )}
         {displayedPosts.map((post) => (
           <div className="post-card" key={post._id}>
             <div className="post-header">

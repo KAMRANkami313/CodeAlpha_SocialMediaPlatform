@@ -12,6 +12,8 @@ import StoriesBar from '../components/feed/StoriesBar';
 import StoryViewer from '../components/feed/StoryViewer';
 import SuggestionsSidebar from '../components/feed/SuggestionsSidebar';
 import LikersModal from '../components/common/LikersModal';
+import EmptyState from '../components/common/EmptyState';
+import { PostSkeleton } from '../components/common/Skeleton';
 
 const Feed = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -164,17 +166,20 @@ const Feed = () => {
           ))}
 
           {loadingPosts && posts.length === 0 && (
-            <div className="auth-card" style={{ textAlign: 'center', color: 'var(--secondary-text)' }}>
-              Loading posts...
-            </div>
+            <>
+              <PostSkeleton />
+              <PostSkeleton />
+            </>
           )}
 
           {posts.length === 0 && !loadingPosts && (
-            <div className="auth-card" style={{ textAlign: 'center', color: 'var(--secondary-text)' }}>
-              {targetPostId ? 'Post not found or has been deleted' : 'No posts yet. Be the first to share!'}
-            </div>
+            <EmptyState
+              icon={targetPostId ? '🔍' : '📝'}
+              title={targetPostId ? 'Post not found' : 'No posts yet'}
+              message={targetPostId ? 'This post may have been deleted.' : 'Be the first to share something with your community!'}
+            />
           )}
-
+          
           {hasMore && (
             <div ref={sentinelRef} className="infinite-scroll-sentinel">
               {loadingPosts && <div className="loading-spinner"></div>}
