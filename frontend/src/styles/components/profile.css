@@ -155,3 +155,85 @@
     grid-template-columns: 1fr;
   }
 }
+.settings-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--secondary-text);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.settings-tab:hover {
+  color: var(--text-color);
+}
+
+.settings-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.settings-form {
+  text-align: left;
+}
+
+.settings-success {
+  color: var(--success);
+  font-size: var(--text-sm);
+  margin: 0 0 var(--space-4) 0;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: var(--radius-sm);
+}
+
+.settings-danger-zone {
+  text-align: center;
+}
+
+.settings-danger-text {
+  font-size: var(--text-sm);
+  color: var(--secondary-text);
+  line-height: 1.6;
+  margin: 0 0 var(--space-5) 0;
+}
+
+.settings-danger-btn {
+  background: var(--danger) !important;
+  width: auto;
+}
+
+.settings-danger-btn:hover {
+  opacity: 0.9;
+}
+
+.settings-confirm-delete {
+  padding: var(--space-4);
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: var(--radius-md);
+}
+
+.settings-confirm-text {
+  font-weight: 600;
+  color: var(--danger);
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-sm);
+}
+
+.settings-confirm-buttons {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}

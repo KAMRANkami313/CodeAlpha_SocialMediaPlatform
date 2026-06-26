@@ -5,5 +5,11 @@ export const authService = {
     API.post('/users/register', { username, email, password }),
 
   login: (email, password) =>
-    API.post('/users/login', { email, password })
+    API.post('/users/login', { email, password }),
+
+  changePassword: (currentPassword, newPassword) =>
+    API.put('/users/password', { currentPassword, newPassword }),
+
+  deleteAccount: () =>
+    API.delete('/users/account')
 };

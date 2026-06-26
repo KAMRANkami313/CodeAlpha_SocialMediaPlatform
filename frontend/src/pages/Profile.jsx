@@ -12,7 +12,7 @@ import ProfileHeader from '../components/profile/ProfileHeader';
 const Profile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, setUser } = useContext(AuthContext);
+  const { user, setUser, logoutUser } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [editing, setEditing] = useState(false);
@@ -57,6 +57,11 @@ const Profile = () => {
     navigate('/messages', { state: { startChatWith: profile } });
   };
 
+    const handleAccountDeleted = () => {
+    logoutUser();
+    navigate('/');
+  };
+
   const handleOpenUserList = (list, title) => {
     if (list.length === 0) return;
     setUserListModal(list);
@@ -85,6 +90,7 @@ const Profile = () => {
         onOpenUserList={handleOpenUserList}
         setUser={setUser}
         onProfileUpdated={fetchProfile}
+        onAccountDeleted={handleAccountDeleted}
       />
 
       {isMe && (

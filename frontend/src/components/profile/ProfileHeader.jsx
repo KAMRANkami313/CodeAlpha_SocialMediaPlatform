@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
 import ProfileEditForm from './ProfileEditForm';
+import SettingsModal from './SettingsModal';
 
 const ProfileHeader = ({
   profile,
@@ -15,8 +17,11 @@ const ProfileHeader = ({
   onMessage,
   onOpenUserList,
   setUser,
-  onProfileUpdated
+  onProfileUpdated,
+  onAccountDeleted
 }) => {
+  const [showSettings, setShowSettings] = useState(false);
+
   return (
     <div className="profile-header">
       <div className="profile-avatar-wrapper">
@@ -73,11 +78,21 @@ const ProfileHeader = ({
           <div className="profile-bio">
             <p>{profile.bio || 'No bio yet.'}</p>
             {isMe && (
-              <button className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onEdit}>Edit Profile</button>
+              <div className="profile-action-buttons">
+                <button className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onEdit}>Edit Profile</button>
+                <button className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={() => setShowSettings(true)}>Settings</button>
+              </div>
             )}
           </div>
         )}
       </div>
+
+      {showSettings && (
+        <SettingsModal
+          onClose={() => setShowSettings(false)}
+          onAccountDeleted={onAccountDeleted}
+        />
+      )}
     </div>
   );
 };

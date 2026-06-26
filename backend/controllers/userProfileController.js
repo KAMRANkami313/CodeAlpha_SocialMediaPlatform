@@ -1,4 +1,9 @@
 const User = require('../models/User');
+const Post = require('../models/Post');
+const Comment = require('../models/Comment');
+const Message = require('../models/Message');
+const Notification = require('../models/Notification');
+const Story = require('../models/Story');
 const asyncHandler = require('../utils/asyncHandler');
 
 const getProfile = asyncHandler(async (req, res) => {
@@ -52,7 +57,60 @@ const updateProfile = asyncHandler(async (req, res) => {
   res.status(200).json(user);
 });
 
+const deleteAccount = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  await Post.deleteMany({ user: userId });
+
+  await Post.updateMany(
+    { likes: userId },
+    { $pull: { likes: userId } }
+  );
+  await Post.updateMany(
+    { views: userId },
+    { $pull: { views: userId } }
+  );
+
+  await Comment.deleteMany({ user: userId });
+  await Comment.updateMany(
+    { likes: userId },
+    { $pull: { likes: userId } }
+  );
+
+  await Message.deleteMany({
+    $or: [{ sender: userId }, { receiver: userId }]
+  });
+
+  await Notification.deleteMany({
+    $or: [{ sender: userId }, { receiver: userId }]
+  });
+
+  await Story.deleteMany({ user: userId });
+
+  await User.updateMany(
+    { followers: userId },
+    { $pull: { followers: userId } }
+  );
+  await User.updateMany(
+    { following: userId },
+    { $pull: { following: userId } }
+  );
+  await User.updateMany(
+    { views: userId },
+    { $pull: { views: userId } }
+  );
+  await User.updateMany(
+    { savedPosts: { $in: [userId] } },
+    { $pull: { savedPosts: userId } }
+  );
+
+  await User.findByIdAndDelete(userId);
+
+  res.status(200).json({ message: 'Account deleted successfully' });
+});
+
 module.exports = {
   getProfile,
-  updateProfile
+  updateProfile,
+  deleteAccount
 };

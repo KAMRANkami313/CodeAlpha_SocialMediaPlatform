@@ -50,6 +50,16 @@ const validateComment = [
   handleValidationErrors
 ];
 
+const validateChangePassword = [
+  body('currentPassword')
+    .notEmpty()
+    .withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters long'),
+  handleValidationErrors
+];
+
 function handleValidationErrors(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -65,5 +75,6 @@ module.exports = {
   validateRegister,
   validateLogin,
   validatePost,
-  validateComment
+  validateComment,
+  validateChangePassword
 };
