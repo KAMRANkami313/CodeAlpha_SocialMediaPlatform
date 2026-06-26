@@ -11,6 +11,7 @@ const exploreRoutes = require('./routes/exploreRoutes');
 const storyRoutes = require('./routes/storyRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const blockRoutes = require('./routes/blockRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { apiLimiter } = require('./middlewares/rateLimiter');
@@ -40,6 +41,7 @@ app.use('/api/explore', exploreRoutes);
 app.use('/api/stories', storyRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/blocks', blockRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

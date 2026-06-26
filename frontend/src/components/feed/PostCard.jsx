@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { postService } from '../../services/postService';
 import { userService } from '../../services/userService';
@@ -7,6 +7,7 @@ import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
 import PostViewTracker from './PostViewTracker';
 import CommentSection from './CommentSection';
+import ReportModal from './ReportModal';
 
 const evaluateActivityStatus = (lastActivityDate) => {
   if (!lastActivityDate) return false;
@@ -18,6 +19,19 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
   const [editingPostId, setEditingPostId] = useState(null);
   const [editCaptionText, setEditCaptionText] = useState('');
   const [visibleComments, setVisibleComments] = useState({});
+  const [showMenu, setShowMenu] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLike = async (postId) => {
     try {
@@ -104,6 +118,7 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
   };
 
   const isLiked = post.likes.some(l => l._id === user?.id);
+  const isOwnPost = user && user.id === post.user._id;
 
   return (
     <div className="post-card">
@@ -125,7 +140,7 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
             <VerifiedBadge show={post.user.isVerified} />
           </Link>
         </div>
-        {user && user.id === post.user._id && (
+        {isOwnPost ? (
           <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
             <button className="delete-btn" style={{ color: 'var(--accent)' }} onClick={() => handleStartEdit(post)}>
               Edit
@@ -134,6 +149,31 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
               Delete
             </button>
           </div>
+        ) : (
+          user && (
+            <div className="post-menu-container" ref={menuRef}>
+              <button
+                className="like-btn post-menu-trigger"
+                onClick={() => setShowMenu(!showMenu)}
+                aria-label="Post options"
+              >
+                ⋯
+              </button>
+              {showMenu && (
+                <div className="post-menu-dropdown">
+                  <button
+                    className="post-menu-item post-menu-danger"
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowReport(true);
+                    }}
+                  >
+                    Report Post
+                  </button>
+                </div>
+              )}
+            </div>
+          )
         )}
       </div>
       {post.image && <img src={post.image} alt="Post content" className="post-image" />}
@@ -194,6 +234,10 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
       </div>
       {visibleComments[post._id] && (
         <CommentSection post={post} user={user} onCommentsUpdated={onPostUpdated} />
+      )}
+
+      {showReport && (
+        <ReportModal postId={post._id} onClose={() => setShowReport(false)} />
       )}
     </div>
   );
