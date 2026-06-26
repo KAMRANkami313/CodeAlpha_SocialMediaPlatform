@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { userService } from '../../services/userService';
+import { Link, useNavigate } from 'react-router-dom';
+import { searchService } from '../../services/searchService';
 import { STORAGE_KEYS, SEARCH_DEBOUNCE_MS, RECENT_SEARCHES_LIMIT } from '../../utils/constants';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
@@ -14,10 +14,12 @@ const SearchIcon = () => (
 
 const SearchBar = ({ user }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({ users: [], posts: [], tags: [] });
+  const [activeTab, setActiveTab] = useState('all');
   const [recentSearches, setRecentSearches] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -42,13 +44,13 @@ const SearchBar = ({ user }) => {
     const delaySearch = setTimeout(async () => {
       if (searchQuery) {
         try {
-          const res = await userService.search(searchQuery);
+          const res = await searchService.searchAll(searchQuery);
           setSearchResults(res.data);
         } catch (err) {
           console.error(err);
         }
       } else {
-        setSearchResults([]);
+        setSearchResults({ users: [], posts: [], tags: [] });
       }
     }, SEARCH_DEBOUNCE_MS);
 
@@ -57,7 +59,6 @@ const SearchBar = ({ user }) => {
 
   const handleSelectUser = (profileUser) => {
     setSearchQuery('');
-    setSearchResults([]);
     setShowSearchDropdown(false);
 
     if (user) {
@@ -91,13 +92,31 @@ const SearchBar = ({ user }) => {
     }
   };
 
+  const handleTagClick = (tag) => {
+    setShowSearchDropdown(false);
+    setSearchQuery('');
+    navigate(`/?tag=${tag}`);
+  };
+
+  const handlePostClick = (postId) => {
+    setShowSearchDropdown(false);
+    setSearchQuery('');
+    navigate(`/?postId=${postId}`);
+  };
+
+  const hasResults = searchResults.users.length > 0 || searchResults.posts.length > 0 || searchResults.tags.length > 0;
+
+  const showUsers = activeTab === 'all' || activeTab === 'users';
+  const showPosts = activeTab === 'all' || activeTab === 'posts';
+  const showTags = activeTab === 'all' || activeTab === 'tags';
+
   return (
     <div className="search-container" ref={searchRef}>
       <div className="search-input-wrapper">
         <SearchIcon />
         <input
           type="text"
-          placeholder="Search users..."
+          placeholder="Search users, posts, tags..."
           className="search-input"
           value={searchQuery}
           onFocus={() => setShowSearchDropdown(true)}
@@ -107,24 +126,95 @@ const SearchBar = ({ user }) => {
       {showSearchDropdown && (
         <div className="search-dropdown">
           {searchQuery ? (
-            searchResults.map((u) => (
-              <Link
-                key={u._id}
-                to={`/profile/${u._id}`}
-                className="search-item"
-                onClick={() => handleSelectUser(u)}
-              >
-                <Avatar
-                  src={u.profilePicture}
-                  alt="Avatar"
-                  className="search-item-avatar"
-                />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  {u.username}
-                  <VerifiedBadge show={u.isVerified} />
+            <>
+              <div className="search-tabs">
+                <button
+                  className={`search-tab ${activeTab === 'all' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('all')}
+                >
+                  All
+                </button>
+                <button
+                  className={`search-tab ${activeTab === 'users' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('users')}
+                >
+                  People ({searchResults.users.length})
+                </button>
+                <button
+                  className={`search-tab ${activeTab === 'posts' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('posts')}
+                >
+                  Posts ({searchResults.posts.length})
+                </button>
+                <button
+                  className={`search-tab ${activeTab === 'tags' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('tags')}
+                >
+                  Tags ({searchResults.tags.length})
+                </button>
+              </div>
+
+              {!hasResults && (
+                <div style={{ padding: 'var(--space-6) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center' }}>
+                  No results found
                 </div>
-              </Link>
-            ))
+              )}
+
+              {showUsers && searchResults.users.map((u) => (
+                <Link
+                  key={u._id}
+                  to={`/profile/${u._id}`}
+                  className="search-item"
+                  onClick={() => handleSelectUser(u)}
+                >
+                  <Avatar
+                    src={u.profilePicture}
+                    alt="Avatar"
+                    className="search-item-avatar"
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      {u.username}
+                      <VerifiedBadge show={u.isVerified} />
+                    </div>
+                    {u.bio && <span style={{ fontSize: 'var(--text-xs)', color: 'var(--secondary-text)' }}>{u.bio.slice(0, 40)}{u.bio.length > 40 ? '...' : ''}</span>}
+                  </div>
+                </Link>
+              ))}
+
+              {showPosts && searchResults.posts.map((post) => (
+                <div
+                  key={post._id}
+                  className="search-item"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handlePostClick(post._id)}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                      <Avatar src={post.user.profilePicture} alt="Avatar" className="search-item-avatar" style={{ width: '24px', height: '24px' }} />
+                      <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600 }}>{post.user.username}</span>
+                    </div>
+                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--secondary-text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {post.caption || '(no caption)'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {showTags && searchResults.tags.map((item) => (
+                <div
+                  key={item.tag}
+                  className="search-item"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleTagClick(item.tag)}
+                >
+                  <span className="hashtag" style={{ fontWeight: 600 }}>#{item.tag}</span>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'var(--secondary-text)', marginLeft: 'auto' }}>
+                    {item.count} {item.count === 1 ? 'post' : 'posts'}
+                  </span>
+                </div>
+              ))}
+            </>
           ) : (
             <div>
               {recentSearches.length > 0 ? (

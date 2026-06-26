@@ -20,8 +20,11 @@ const searchUsers = asyncHandler(async (req, res) => {
     return res.status(200).json([]);
   }
   const users = await User.find({
-    username: { $regex: query, $options: 'i' }
-  }).select('username profilePicture bio isVerified');
+    $or: [
+      { username: { $regex: query, $options: 'i' } },
+      { bio: { $regex: query, $options: 'i' } }
+    ]
+  }).select('username profilePicture bio isVerified').limit(20);
   res.status(200).json(users);
 });
 
