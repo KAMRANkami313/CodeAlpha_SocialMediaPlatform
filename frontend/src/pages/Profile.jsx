@@ -127,7 +127,7 @@ const Profile = () => {
           />
         )}
         {displayedPosts.map((post) => (
-          <div className="post-card" key={post._id}>
+          <div className="post-card" key={`${activeTab}-${post._id}`}>
             <div className="post-header">
               <Avatar
                 src={post.user.profilePicture}
