@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
 const env = require('./config/env');
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
@@ -12,6 +13,7 @@ const storyRoutes = require('./routes/storyRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const blockRoutes = require('./routes/blockRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { apiLimiter } = require('./middlewares/rateLimiter');
@@ -31,6 +33,8 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use('/api', apiLimiter);
 
 app.use('/api/users', userRoutes);
@@ -42,6 +46,7 @@ app.use('/api/stories', storyRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/blocks', blockRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { userService } from '../../services/userService';
+import { uploadService } from '../../services/uploadService';
+import Avatar from '../common/Avatar';
 
 const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpdated }) => {
   const [usernameInput, setUsernameInput] = useState(initialProfile.username);
@@ -8,9 +10,26 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
   const [profilePicInput, setProfilePicInput] = useState(initialProfile.profilePicture);
   const [isVerifiedInput, setIsVerifiedInput] = useState(initialProfile.isVerified);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadService.uploadImage(file);
+      setProfilePicInput(res.data.imageUrl);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    if (uploading) return;
     setError('');
     try {
       const response = await userService.updateProfile({
@@ -47,6 +66,32 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
           {error}
         </p>
       )}
+      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+        <Avatar
+          src={profilePicInput}
+          alt="Profile Preview"
+          className="post-avatar"
+          style={{ width: '64px', height: '64px' }}
+        />
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            className="btn"
+            style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? 'Uploading...' : 'Change Photo'}
+          </button>
+        </div>
+      </div>
       <div className="form-group">
         <input
           type="text"
@@ -66,14 +111,6 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
         />
       </div>
       <div className="form-group">
-        <input
-          type="text"
-          placeholder="Profile Picture URL"
-          value={profilePicInput}
-          onChange={(e) => setProfilePicInput(e.target.value)}
-        />
-      </div>
-      <div className="form-group">
         <textarea
           placeholder="Bio"
           value={bioInput}
@@ -90,7 +127,7 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
         <label style={{ fontSize: 'var(--text-sm)' }}>Request Verification Checkmark Badge</label>
       </div>
       <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-        <button type="submit" className="btn" style={{ width: 'auto' }}>Save Changes</button>
+        <button type="submit" className="btn" style={{ width: 'auto' }} disabled={uploading}>Save Changes</button>
         <button type="button" className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onCancel}>Cancel</button>
       </div>
     </form>

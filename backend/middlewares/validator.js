@@ -32,13 +32,9 @@ const validateLogin = [
 
 const validatePost = [
   body('caption')
-    .optional()
+    .optional({ checkFalsy: true })
     .isLength({ max: 500 })
     .withMessage('Caption cannot exceed 500 characters'),
-  body('image')
-    .optional()
-    .isURL()
-    .withMessage('Image must be a valid URL'),
   handleValidationErrors
 ];
 

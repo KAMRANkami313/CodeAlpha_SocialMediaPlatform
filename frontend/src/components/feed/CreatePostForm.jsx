@@ -1,19 +1,52 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { postService } from '../../services/postService';
+import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
 
 const CreatePostForm = ({ onPostCreated }) => {
   const { user } = useContext(AuthContext);
   const [caption, setCaption] = useState('');
   const [image, setImage] = useState('');
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setImagePreview(URL.createObjectURL(file));
+    try {
+      const res = await uploadService.uploadImage(file);
+      setImage(res.data.imageUrl);
+    } catch (error) {
+      console.error(error);
+      setImagePreview('');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImage('');
+    setImagePreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
+    if (uploading) return;
     try {
       await postService.createPost(caption, image);
       setCaption('');
       setImage('');
+      setImagePreview('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       onPostCreated();
     } catch (error) {
       console.error(error);
@@ -41,15 +74,32 @@ const CreatePostForm = ({ onPostCreated }) => {
             required
           />
         </div>
+        {imagePreview && (
+          <div className="image-preview-container">
+            <img src={imagePreview} alt="Preview" className="image-preview" />
+            <button type="button" className="image-preview-remove" onClick={handleRemoveImage}>×</button>
+            {uploading && <div className="image-preview-uploading">Uploading...</div>}
+          </div>
+        )}
         <div className="form-group">
           <input
-            type="text"
-            placeholder="Image URL (optional)"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
           />
+          <button
+            type="button"
+            className="btn"
+            style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)', marginBottom: 'var(--space-3)' }}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? 'Uploading...' : '📷 Upload Image'}
+          </button>
         </div>
-        <button type="submit" className="btn">Post</button>
+        <button type="submit" className="btn" disabled={uploading}>Post</button>
       </form>
     </div>
   );

@@ -6,6 +6,11 @@ import VerifiedBadge from '../common/VerifiedBadge';
 const StoryViewer = ({ activeStoryGroup, onClose }) => {
   const [storyProgress, setStoryProgress] = useState(0);
   const progressInterval = useRef(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (activeStoryGroup) {
@@ -14,7 +19,6 @@ const StoryViewer = ({ activeStoryGroup, onClose }) => {
         setStoryProgress((prev) => {
           if (prev >= 100) {
             clearInterval(progressInterval.current);
-            onClose();
             return 100;
           }
           return prev + STORY_PROGRESS.INCREMENT;
@@ -24,7 +28,13 @@ const StoryViewer = ({ activeStoryGroup, onClose }) => {
     return () => {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
-  }, [activeStoryGroup, onClose]);
+  }, [activeStoryGroup]);
+
+  useEffect(() => {
+    if (storyProgress >= 100) {
+      onCloseRef.current();
+    }
+  }, [storyProgress]);
 
   if (!activeStoryGroup) return null;
 

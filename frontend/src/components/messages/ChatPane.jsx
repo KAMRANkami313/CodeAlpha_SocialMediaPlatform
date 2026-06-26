@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { messageService } from '../../services/messageService';
+import { uploadService } from '../../services/uploadService';
 import VerifiedBadge from '../common/VerifiedBadge';
 
 const isImageURL = (url) => {
   return (
     url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null ||
+    url.startsWith('http://localhost:5000/uploads/') ||
     url.startsWith('https://images.unsplash.com') ||
     url.startsWith('https://picsum.photos')
   );
@@ -12,6 +14,8 @@ const isImageURL = (url) => {
 
 const ChatPane = ({ activePartner, user, messages, onMessageSent, onMessageDeleted }) => {
   const [text, setText] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -22,6 +26,23 @@ const ChatPane = ({ activePartner, user, messages, onMessageSent, onMessageDelet
       setText('');
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activePartner) return;
+    setUploading(true);
+    try {
+      const uploadRes = await uploadService.uploadImage(file);
+      const imageUrl = uploadRes.data.imageUrl;
+      const res = await messageService.sendMessage(activePartner._id, imageUrl);
+      onMessageSent(res.data);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -82,16 +103,37 @@ const ChatPane = ({ activePartner, user, messages, onMessageSent, onMessageDelet
               )}
             </div>
           ))}
+          {uploading && (
+            <div className="chat-bubble mine" style={{ opacity: 0.6 }}>
+              <div>Uploading image...</div>
+            </div>
+          )}
         </div>
         <form className="chat-form" onSubmit={handleSendMessage}>
           <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleImageUpload}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            className="chat-attach-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            aria-label="Send image"
+          >
+            📷
+          </button>
+          <input
             type="text"
-            placeholder="Type a message or paste image URL..."
+            placeholder="Type a message..."
             value={text}
             onChange={(e) => setText(e.target.value)}
             required
           />
-          <button type="submit">Send</button>
+          <button type="submit" disabled={uploading}>Send</button>
         </form>
       </div>
     </div>
