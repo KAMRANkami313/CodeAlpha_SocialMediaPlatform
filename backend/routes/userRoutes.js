@@ -10,9 +10,11 @@ const {
   registerActivityPing
 } = require('../controllers/userInteractionController');
 const auth = require('../middlewares/auth');
+const { authLimiter } = require('../middlewares/rateLimiter');
+const { validateRegister, validateLogin } = require('../middlewares/validator');
 
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', authLimiter, validateRegister, register);
+router.post('/login', authLimiter, validateLogin, login);
 router.get('/search', searchUsers);
 router.get('/suggested', auth, getSuggestedUsers);
 router.get('/profile/:id', auth, getProfile);
