@@ -8,7 +8,7 @@ import ChatPane from '../components/messages/ChatPane';
 
 const Messages = () => {
   const { user } = useContext(AuthContext);
-  const { socket } = useContext(SocketContext);
+  const { socket, onlineUsers } = useContext(SocketContext);
   const location = useLocation();
   const [conversations, setConversations] = useState([]);
   const [activePartner, setActivePartner] = useState(null);
@@ -68,6 +68,10 @@ const Messages = () => {
           return [...prev, newMessage];
         });
         fetchConversations();
+
+        if (newMessage.sender === activePartner._id) {
+          socket.emit('messages_read', { sender: activePartner._id });
+        }
       }
     };
 
@@ -98,6 +102,8 @@ const Messages = () => {
     fetchConversations();
   };
 
+  const isPartnerOnline = activePartner && onlineUsers && onlineUsers.has(activePartner._id);
+
   return (
     <div className="container" style={{ maxWidth: '935px' }}>
       <div className="chat-layout">
@@ -105,6 +111,7 @@ const Messages = () => {
           conversations={conversations}
           activePartner={activePartner}
           onSelectPartner={setActivePartner}
+          onlineUsers={onlineUsers}
         />
         <ChatPane
           activePartner={activePartner}
@@ -112,6 +119,7 @@ const Messages = () => {
           messages={messages}
           onMessageSent={handleMessageSent}
           onMessageDeleted={handleMessageDeleted}
+          isPartnerOnline={isPartnerOnline}
         />
       </div>
     </div>

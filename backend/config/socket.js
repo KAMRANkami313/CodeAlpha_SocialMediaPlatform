@@ -58,6 +58,20 @@ const initSocket = (server, corsOrigin) => {
       }
     });
 
+    socket.on('typing', (data) => {
+      const receiverSocketId = onlineUsers.get(data.receiver);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('typing', { sender: userId, isTyping: data.isTyping });
+      }
+    });
+
+    socket.on('messages_read', (data) => {
+      const senderSocketId = onlineUsers.get(data.sender);
+      if (senderSocketId) {
+        io.to(senderSocketId).emit('messages_read', { reader: userId });
+      }
+    });
+
     socket.on('disconnect', () => {
       onlineUsers.delete(userId);
       io.emit('user_offline', userId);
