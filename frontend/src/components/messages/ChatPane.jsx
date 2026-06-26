@@ -7,6 +7,7 @@ const isImageURL = (url) => {
   return (
     url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null ||
     url.startsWith('http://localhost:5000/uploads/') ||
+    url.startsWith('https://res.cloudinary.com/') ||
     url.startsWith('https://images.unsplash.com') ||
     url.startsWith('https://picsum.photos')
   );
