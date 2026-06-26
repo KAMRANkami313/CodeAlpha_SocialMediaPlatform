@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Block = require('../models/Block');
 const { createNotification } = require('../services/notificationService');
 const asyncHandler = require('../utils/asyncHandler');
 
@@ -6,6 +7,17 @@ const followUser = asyncHandler(async (req, res) => {
   if (req.user.id === req.params.id) {
     return res.status(400).json({ message: 'You cannot follow yourself' });
   }
+
+  const blockExists = await Block.findOne({
+    $or: [
+      { blocker: req.user.id, blocked: req.params.id },
+      { blocker: req.params.id, blocked: req.user.id }
+    ]
+  });
+  if (blockExists) {
+    return res.status(403).json({ message: 'Cannot follow this user due to a block' });
+  }
+
   const targetUser = await User.findById(req.params.id);
   const currentUser = await User.findById(req.user.id);
   if (!targetUser) {

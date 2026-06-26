@@ -1,10 +1,22 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
+const Block = require('../models/Block');
 const asyncHandler = require('../utils/asyncHandler');
 
 const sendMessage = asyncHandler(async (req, res) => {
   const { content } = req.body;
   const receiverId = req.params.receiverId;
+
+  const blockExists = await Block.findOne({
+    $or: [
+      { blocker: req.user.id, blocked: receiverId },
+      { blocker: receiverId, blocked: req.user.id }
+    ]
+  });
+  if (blockExists) {
+    return res.status(403).json({ message: 'Cannot send message due to a block' });
+  }
+
   const newMessage = new Message({
     sender: req.user.id,
     receiver: receiverId,
