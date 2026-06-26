@@ -1,19 +1,20 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { SocketContext } from '../context/SocketContext';
 import { messageService } from '../services/messageService';
-import { POLL_INTERVALS } from '../utils/constants';
 import ConversationList from '../components/messages/ConversationList';
 import ChatPane from '../components/messages/ChatPane';
 
 const Messages = () => {
   const { user } = useContext(AuthContext);
+  const { socket } = useContext(SocketContext);
   const location = useLocation();
   const [conversations, setConversations] = useState([]);
   const [activePartner, setActivePartner] = useState(null);
   const [messages, setMessages] = useState([]);
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     try {
       const res = await messageService.getConversations();
       let list = res.data;
@@ -28,17 +29,9 @@ const Messages = () => {
     } catch (err) {
       console.error(err);
     }
-  };
-
-  useEffect(() => {
-    fetchConversations();
-    const startWith = location.state?.startChatWith;
-    if (startWith) {
-      setActivePartner(startWith);
-    }
   }, [location.state]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (!activePartner) return;
     try {
       const res = await messageService.getConversation(activePartner._id);
@@ -46,21 +39,62 @@ const Messages = () => {
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [activePartner]);
+
+  useEffect(() => {
+    fetchConversations();
+    const startWith = location.state?.startChatWith;
+    if (startWith) {
+      setActivePartner(startWith);
+    }
+  }, [location.state, fetchConversations]);
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(fetchMessages, POLL_INTERVALS.MESSAGES);
-    return () => clearInterval(interval);
-  }, [activePartner]);
+  }, [activePartner, fetchMessages]);
+
+  useEffect(() => {
+    if (!socket || !activePartner || !user) return;
+
+    socket.emit('join_conversation', activePartner._id);
+
+    const handleReceiveMessage = (newMessage) => {
+      if (
+        (newMessage.sender === activePartner._id && newMessage.receiver === user.id) ||
+        (newMessage.sender === user.id && newMessage.receiver === activePartner._id)
+      ) {
+        setMessages(prev => {
+          if (prev.some(m => m._id === newMessage._id)) return prev;
+          return [...prev, newMessage];
+        });
+        fetchConversations();
+      }
+    };
+
+    const handleMessageDeleted = (data) => {
+      setMessages(prev => prev.filter(m => m._id !== data.messageId));
+    };
+
+    socket.on('receive_message', handleReceiveMessage);
+    socket.on('message_deleted', handleMessageDeleted);
+
+    return () => {
+      socket.emit('leave_conversation', activePartner._id);
+      socket.off('receive_message', handleReceiveMessage);
+      socket.off('message_deleted', handleMessageDeleted);
+    };
+  }, [socket, activePartner, user, fetchConversations]);
 
   const handleMessageSent = (newMessage) => {
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages(prev => {
+      if (prev.some(m => m._id === newMessage._id)) return prev;
+      return [...prev, newMessage];
+    });
     fetchConversations();
   };
 
   const handleMessageDeleted = (messageId) => {
-    setMessages((prev) => prev.filter((m) => m._id !== messageId));
+    setMessages(prev => prev.filter(m => m._id !== messageId));
     fetchConversations();
   };
 

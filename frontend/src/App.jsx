@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorProvider } from './context/ErrorContext';
+import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/navbar/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -35,9 +36,11 @@ const App = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ErrorProvider>
-          <AppContent />
-        </ErrorProvider>
+        <SocketProvider>
+          <ErrorProvider>
+            <AppContent />
+          </ErrorProvider>
+        </SocketProvider>
       </AuthProvider>
     </ThemeProvider>
   );

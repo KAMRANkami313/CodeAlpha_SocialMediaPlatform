@@ -1,8 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const http = require('http');
 const env = require('./config/env');
 const connectDB = require('./config/db');
+const { initSocket } = require('./config/socket');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -18,6 +20,9 @@ const errorHandler = require('./middlewares/errorHandler');
 const { apiLimiter } = require('./middlewares/rateLimiter');
 
 const app = express();
+const server = http.createServer(app);
+
+const corsOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 connectDB();
 
@@ -26,7 +31,7 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: corsOrigin,
   credentials: true
 }));
 
@@ -48,7 +53,10 @@ app.use('/api/uploads', uploadRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
+const io = initSocket(server, corsOrigin);
+app.set('io', io);
+
+server.listen(env.PORT, () => {
   console.log(`Server running on port ${env.PORT}`);
 });
 

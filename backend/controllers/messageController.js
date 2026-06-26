@@ -23,6 +23,14 @@ const sendMessage = asyncHandler(async (req, res) => {
     content
   });
   await newMessage.save();
+
+  const io = req.app.get('io');
+  if (io) {
+    io.to(receiverId).emit('receive_message', newMessage);
+    const room = [req.user.id, receiverId].sort().join('_');
+    io.to(room).emit('receive_message', newMessage);
+  }
+
   res.status(201).json(newMessage);
 });
 
@@ -64,7 +72,15 @@ const deleteMessage = asyncHandler(async (req, res) => {
   if (message.sender.toString() !== req.user.id) {
     return res.status(401).json({ message: 'Unauthorized action' });
   }
+
+  const receiverId = message.receiver.toString();
   await Message.findByIdAndDelete(req.params.messageId);
+
+  const io = req.app.get('io');
+  if (io) {
+    io.to(receiverId).emit('message_deleted', { messageId: req.params.messageId });
+  }
+
   res.status(200).json({ message: 'Message deleted successfully' });
 });
 

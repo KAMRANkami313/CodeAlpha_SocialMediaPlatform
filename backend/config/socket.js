@@ -1,0 +1,72 @@
+const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
+
+const onlineUsers = new Map();
+
+const initSocket = (server, corsOrigin) => {
+  const io = new Server(server, {
+    cors: {
+      origin: corsOrigin,
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      credentials: true
+    }
+  });
+
+  io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      return next(new Error('Authentication error: No token provided'));
+    }
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.userId = decoded.id;
+      next();
+    } catch (err) {
+      next(new Error('Authentication error: Invalid token'));
+    }
+  });
+
+  io.on('connection', (socket) => {
+    const userId = socket.userId;
+    onlineUsers.set(userId, socket.id);
+
+    io.emit('user_online', userId);
+
+    socket.on('join_conversation', (otherUserId) => {
+      const room = [userId, otherUserId].sort().join('_');
+      socket.join(room);
+    });
+
+    socket.on('leave_conversation', (otherUserId) => {
+      const room = [userId, otherUserId].sort().join('_');
+      socket.leave(room);
+    });
+
+    socket.on('send_message', (data) => {
+      const receiverSocketId = onlineUsers.get(data.receiver);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('receive_message', data);
+      }
+      const room = [userId, data.receiver].sort().join('_');
+      socket.to(room).emit('receive_message', data);
+    });
+
+    socket.on('message_deleted', (data) => {
+      const receiverSocketId = onlineUsers.get(data.receiver);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('message_deleted', data);
+      }
+    });
+
+    socket.on('disconnect', () => {
+      onlineUsers.delete(userId);
+      io.emit('user_offline', userId);
+    });
+  });
+
+  return io;
+};
+
+const isUserOnline = (userId) => onlineUsers.has(userId);
+
+module.exports = { initSocket, isUserOnline };
