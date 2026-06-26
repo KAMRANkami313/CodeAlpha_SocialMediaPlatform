@@ -671,3 +671,34 @@
     border-radius: 0;
   }
 }
+
+.infinite-scroll-sentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) 0;
+  min-height: 60px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--bg-subtle);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.feed-end-message {
+  text-align: center;
+  padding: var(--space-8) 0;
+  color: var(--secondary-text);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}

@@ -2,6 +2,8 @@ const Post = require('../models/Post');
 const { findPostByIdPopulated, findPostsPopulated } = require('../utils/postHelpers');
 const asyncHandler = require('../utils/asyncHandler');
 
+const PAGE_SIZE = 10;
+
 const createPost = asyncHandler(async (req, res) => {
   const { caption, image } = req.body;
   const newPost = new Post({
@@ -16,12 +18,27 @@ const createPost = asyncHandler(async (req, res) => {
 
 const getAllPosts = asyncHandler(async (req, res) => {
   const { tag } = req.query;
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || PAGE_SIZE));
+  const skip = (page - 1) * limit;
+
   let filter = {};
   if (tag) {
     filter = { caption: { $regex: `#${tag}`, $options: 'i' } };
   }
-  const posts = await findPostsPopulated(filter).sort({ createdAt: -1 });
-  res.status(200).json(posts);
+
+  const [posts, total] = await Promise.all([
+    findPostsPopulated(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Post.countDocuments(filter)
+  ]);
+
+  res.status(200).json({
+    data: posts,
+    page,
+    totalPages: Math.ceil(total / limit),
+    totalPosts: total,
+    hasMore: page * limit < total
+  });
 });
 
 const getUserPosts = asyncHandler(async (req, res) => {

@@ -30,4 +30,8 @@ const postSchema = new mongoose.Schema({
   timestamps: true
 });
 
+postSchema.index({ user: 1 });
+postSchema.index({ createdAt: -1 });
+postSchema.index({ caption: 'text' });
+
 module.exports = mongoose.model('Post', postSchema);

@@ -1,10 +1,11 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { postService } from '../services/postService';
 import { userService } from '../services/userService';
 import { storyService } from '../services/storyService';
 import { TOAST_DURATION_MS } from '../utils/constants';
+import useInfiniteScroll from '../hooks/useInfiniteScroll';
 import CreatePostForm from '../components/feed/CreatePostForm';
 import PostCard from '../components/feed/PostCard';
 import StoriesBar from '../components/feed/StoriesBar';
@@ -25,6 +26,11 @@ const Feed = () => {
   const [toast, setToast] = useState('');
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
 
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+  const isFetchingRef = useRef(false);
+
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => {
@@ -32,19 +38,37 @@ const Feed = () => {
     }, TOAST_DURATION_MS);
   };
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async (pageNum = 1, append = false) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+    setLoadingPosts(true);
     try {
       if (targetPostId) {
         const response = await postService.getPostById(targetPostId);
         setPosts([response.data]);
+        setHasMore(false);
       } else {
-        const response = await postService.getAllPosts(currentTag);
-        setPosts(response.data);
+        const response = await postService.getAllPosts(currentTag, pageNum);
+        const { data, hasMore: more } = response.data;
+        setPosts(prev => append ? [...prev, ...data] : data);
+        setHasMore(more);
+        setPage(pageNum);
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingPosts(false);
+      isFetchingRef.current = false;
     }
-  };
+  }, [currentTag, targetPostId]);
+
+  const loadMorePosts = useCallback(() => {
+    if (hasMore && !loadingPosts) {
+      fetchPosts(page + 1, true);
+    }
+  }, [fetchPosts, hasMore, loadingPosts, page]);
+
+  const sentinelRef = useInfiniteScroll(loadMorePosts, hasMore, loadingPosts);
 
   const fetchSuggestions = async () => {
     if (!user) return;
@@ -67,16 +91,24 @@ const Feed = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(1, false);
     fetchSuggestions();
     fetchStories();
   }, [currentTag, targetPostId, user]);
+
+  const handlePostCreated = () => {
+    fetchPosts(1, false);
+  };
+
+  const handlePostUpdated = () => {
+    fetchPosts(1, false);
+  };
 
   const handleFollowSuggestion = async (id) => {
     try {
       await userService.follow(id);
       fetchSuggestions();
-      fetchPosts();
+      fetchPosts(1, false);
     } catch (error) {
       console.error(error);
     }
@@ -115,7 +147,7 @@ const Feed = () => {
       <div className="feed-layout">
         <div>
           {user && !currentTag && !targetPostId && (
-            <CreatePostForm onPostCreated={fetchPosts} />
+            <CreatePostForm onPostCreated={handlePostCreated} />
           )}
 
           {posts.map((post) => (
@@ -124,14 +156,33 @@ const Feed = () => {
               post={post}
               user={user}
               setUser={setUser}
-              onPostUpdated={fetchPosts}
+              onPostUpdated={handlePostUpdated}
               onShare={handleSharePost}
               onTagClick={handleTagClick}
               setActiveLikers={setActiveLikers}
             />
           ))}
-          {posts.length === 0 && (
-            <div className="auth-card" style={{ textAlign: 'center', color: '#8e8e8e' }}>Post not found or has been deleted</div>
+
+          {loadingPosts && posts.length === 0 && (
+            <div className="auth-card" style={{ textAlign: 'center', color: 'var(--secondary-text)' }}>
+              Loading posts...
+            </div>
+          )}
+
+          {posts.length === 0 && !loadingPosts && (
+            <div className="auth-card" style={{ textAlign: 'center', color: 'var(--secondary-text)' }}>
+              {targetPostId ? 'Post not found or has been deleted' : 'No posts yet. Be the first to share!'}
+            </div>
+          )}
+
+          {hasMore && (
+            <div ref={sentinelRef} className="infinite-scroll-sentinel">
+              {loadingPosts && <div className="loading-spinner"></div>}
+            </div>
+          )}
+
+          {!hasMore && posts.length > 0 && !targetPostId && (
+            <div className="feed-end-message">You're all caught up ✨</div>
           )}
         </div>
 

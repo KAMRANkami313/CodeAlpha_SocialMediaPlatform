@@ -4,8 +4,8 @@ export const postService = {
   createPost: (caption, image) =>
     API.post('/posts', { caption, image }),
 
-  getAllPosts: (tag) =>
-    API.get('/posts', { params: tag ? { tag } : {} }),
+  getAllPosts: (tag, page = 1, limit = 10) =>
+    API.get('/posts', { params: { ...(tag ? { tag } : {}), page, limit } }),
 
   getPostById: (postId) =>
     API.get(`/posts/${postId}`),
