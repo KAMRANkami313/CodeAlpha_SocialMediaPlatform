@@ -52,6 +52,9 @@ const Login = () => {
           <p className="auth-switch-text">
             Don't have an account? <Link to="/register">Sign up</Link>
           </p>
+          <p className="auth-switch-text" style={{ marginTop: 'var(--space-3)' }}>
+            <Link to="/forgot-password">Forgot password?</Link>
+          </p>
         </div>
       </div>
     </div>
