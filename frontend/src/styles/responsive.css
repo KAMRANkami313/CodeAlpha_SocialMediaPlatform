@@ -1,0 +1,128 @@
+.container {
+  max-width: 600px;
+  margin: var(--space-6) auto;
+  padding: 0 var(--space-4);
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: var(--space-4) auto;
+    padding: 0 var(--space-3);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    margin: var(--space-3) auto;
+    padding: 0 var(--space-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    gap: var(--space-2);
+  }
+  .navbar-brand {
+    font-size: var(--text-lg);
+  }
+  .search-container {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: var(--space-2) var(--space-3);
+  }
+  .navbar-brand {
+    font-size: var(--text-base);
+  }
+  .search-container {
+    max-width: 140px;
+  }
+  .search-input {
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-8);
+    font-size: var(--text-xs);
+  }
+  .search-input-icon {
+    left: var(--space-2);
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .post-actions {
+    gap: var(--space-1);
+  }
+  .post-action-info {
+    font-size: var(--text-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .post-actions > div {
+    gap: 0;
+  }
+  .like-btn {
+    padding: var(--space-1);
+  }
+}
+
+@media (max-width: 1024px) {
+  .explore-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.feed-tag-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.feed-tag-header h2 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .feed-tag-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .feed-tag-header .btn {
+    width: 100%;
+  }
+}
+
+@supports (padding: max(0px)) {
+  .navbar {
+    padding-left: max(var(--space-6), env(safe-area-inset-left));
+    padding-right: max(var(--space-6), env(safe-area-inset-right));
+    padding-top: max(var(--space-3), env(safe-area-inset-top));
+  }
+  .navbar-mobile-menu {
+    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  }
+  .toast-container {
+    bottom: max(var(--space-6), env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  .like-btn,
+  .navbar-mobile-toggle,
+  .modal-close-btn,
+  .story-close-btn,
+  .follow-link,
+  .comment-form button,
+  .chat-form button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

@@ -1,0 +1,94 @@
+.explore-section-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-5) 0;
+}
+
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-5);
+}
+
+.explore-user-card {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--transition-base),
+    transform var(--transition-fast);
+}
+
+.explore-user-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.explore-user-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto var(--space-3) auto;
+  object-fit: cover;
+  border: 3px solid var(--bg-elevated);
+  box-shadow: 0 0 0 2px var(--accent-gradient);
+}
+
+.explore-user-name {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  transition: color var(--transition-fast);
+}
+
+.explore-user-name:hover {
+  color: var(--accent);
+}
+
+.explore-user-bio {
+  font-size: var(--text-xs);
+  color: var(--secondary-text);
+  margin: 0 0 var(--space-3) 0;
+  height: 36px;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+.explore-tag-item {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.explore-tag-item:last-child {
+  border-bottom: none;
+}
+
+.explore-tag-item:hover {
+  background-color: var(--hover-bg);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  border-bottom: 1px solid transparent;
+}
+
+.explore-tag-count {
+  font-size: var(--text-xs);
+  color: var(--secondary-text);
+  margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+  .explore-grid {
+    grid-template-columns: 1fr;
+  }
+}
