@@ -25,8 +25,11 @@ export const postService = {
   trackImpression: (postId) =>
     API.post(`/posts/${postId}/view`),
 
-  addComment: (postId, content) =>
-    API.post(`/posts/${postId}/comment`, { content }),
+  addComment: (postId, content, parentCommentId) =>
+    API.post(`/posts/${postId}/comment`, { content, parentCommentId }),
+
+  getReplies: (postId, commentId) =>
+    API.get(`/posts/${postId}/comment/${commentId}/replies`),
 
   deleteComment: (postId, commentId) =>
     API.delete(`/posts/${postId}/comment/${commentId}`),
