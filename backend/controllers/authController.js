@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { sendVerificationEmail } = require('../services/emailService');
 const asyncHandler = require('../utils/asyncHandler');
 
 const register = asyncHandler(async (req, res) => {
@@ -11,19 +13,35 @@ const register = asyncHandler(async (req, res) => {
   }
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
+
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
   const newUser = new User({
     username,
     email,
-    password: hashedPassword
+    password: hashedPassword,
+    emailVerificationToken: verificationToken,
+    emailVerificationExpires: Date.now() + 86400000
   });
   await newUser.save();
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const verificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
+
+  try {
+    await sendVerificationEmail(newUser.email, verificationUrl);
+  } catch (err) {
+    console.error('Failed to send verification email:', err.message);
+  }
+
   const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.status(201).json({
     token,
     user: {
       id: newUser._id,
       username: newUser.username,
-      email: newUser.email
+      email: newUser.email,
+      isEmailVerified: newUser.isEmailVerified
     }
   });
 });
@@ -47,7 +65,8 @@ const login = asyncHandler(async (req, res) => {
       email: user.email,
       bio: user.bio,
       profilePicture: user.profilePicture,
-      isVerified: user.isVerified
+      isVerified: user.isVerified,
+      isEmailVerified: user.isEmailVerified
     }
   });
 });
@@ -68,8 +87,35 @@ const changePassword = asyncHandler(async (req, res) => {
   res.status(200).json({ message: 'Password updated successfully' });
 });
 
+const resendVerification = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  if (user.isEmailVerified) {
+    return res.status(400).json({ message: 'Email is already verified' });
+  }
+
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  user.emailVerificationToken = verificationToken;
+  user.emailVerificationExpires = Date.now() + 86400000;
+  await user.save();
+
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const verificationUrl = `${frontendUrl}/verify-email/${verificationToken}`;
+
+  try {
+    await sendVerificationEmail(user.email, verificationUrl);
+  } catch (err) {
+    return res.status(500).json({ message: 'Failed to send verification email' });
+  }
+
+  res.status(200).json({ message: 'Verification email sent' });
+});
+
 module.exports = {
   register,
   login,
-  changePassword
+  changePassword,
+  resendVerification
 };

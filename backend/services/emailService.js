@@ -44,4 +44,38 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
   await transporter.sendMail(mailOptions);
 };
 
-module.exports = { sendPasswordResetEmail };
+const sendVerificationEmail = async (toEmail, verificationUrl) => {
+  const transporter = createTransporter();
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: toEmail,
+    subject: 'SocialApp - Verify Your Email',
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #6366f1; font-size: 28px; font-weight: 700; margin: 0;">SocialApp</h1>
+        </div>
+        <h2 style="color: #0f172a; font-size: 20px;">Verify Your Email Address</h2>
+        <p style="color: #64748b; font-size: 15px; line-height: 1.6;">
+          Welcome to SocialApp! Please verify your email address to complete your registration and unlock all features.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verificationUrl}" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; padding: 12px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
+            Verify Email
+          </a>
+        </div>
+        <p style="color: #64748b; font-size: 13px; line-height: 1.6;">
+          This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+        </p>
+        <p style="color: #94a3b8; font-size: 12px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+          SocialApp — connect, share and discover with your community.
+        </p>
+      </div>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+module.exports = { sendPasswordResetEmail, sendVerificationEmail };

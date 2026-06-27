@@ -16,6 +16,7 @@ const blockRoutes = require('./routes/blockRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
+const verificationRoutes = require('./routes/verificationRoutes');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { apiLimiter } = require('./middlewares/rateLimiter');
@@ -51,6 +52,7 @@ app.use('/api/blocks', blockRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
+app.use('/api/verification', verificationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
