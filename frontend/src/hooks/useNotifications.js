@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { notificationService } from '../services/notificationService';
-import { POLL_INTERVALS } from '../utils/constants';
+import { useSocket } from '../context/SocketContext';
 
 const useNotifications = (user) => {
+  const { socket } = useSocket();
   const [notifications, setNotifications] = useState([]);
 
   const fetchNotifications = useCallback(async () => {
@@ -17,9 +18,21 @@ const useNotifications = (user) => {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, POLL_INTERVALS.NOTIFICATIONS);
-    return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewNotification = () => {
+      fetchNotifications();
+    };
+
+    socket.on('new_notification', handleNewNotification);
+
+    return () => {
+      socket.off('new_notification', handleNewNotification);
+    };
+  }, [socket, fetchNotifications]);
 
   return { notifications, fetchNotifications };
 };

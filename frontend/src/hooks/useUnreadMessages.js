@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { messageService } from '../services/messageService';
-import { POLL_INTERVALS } from '../utils/constants';
+import { useSocket } from '../context/SocketContext';
 
 const useUnreadMessages = (user) => {
+  const { socket } = useSocket();
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   const fetchUnreadMessagesCount = useCallback(async () => {
@@ -17,9 +18,21 @@ const useUnreadMessages = (user) => {
 
   useEffect(() => {
     fetchUnreadMessagesCount();
-    const interval = setInterval(fetchUnreadMessagesCount, POLL_INTERVALS.UNREAD_MESSAGES);
-    return () => clearInterval(interval);
   }, [fetchUnreadMessagesCount]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUnreadCountUpdate = (count) => {
+      setUnreadMessages(count);
+    };
+
+    socket.on('unread_count_update', handleUnreadCountUpdate);
+
+    return () => {
+      socket.off('unread_count_update', handleUnreadCountUpdate);
+    };
+  }, [socket]);
 
   return unreadMessages;
 };

@@ -2,6 +2,7 @@ const Message = require('../models/Message');
 const User = require('../models/User');
 const Block = require('../models/Block');
 const asyncHandler = require('../utils/asyncHandler');
+const { getIo } = require('../config/socket');
 
 const sendMessage = asyncHandler(async (req, res) => {
   const { content } = req.body;
@@ -24,11 +25,12 @@ const sendMessage = asyncHandler(async (req, res) => {
   });
   await newMessage.save();
 
-  const io = req.app.get('io');
+  const io = getIo();
   if (io) {
     io.to(receiverId).emit('receive_message', newMessage);
-    const room = [req.user.id, receiverId].sort().join('_');
-    io.to(room).emit('receive_message', newMessage);
+
+    const unreadCount = await Message.countDocuments({ receiver: receiverId, read: false });
+    io.to(receiverId).emit('unread_count_update', unreadCount);
   }
 
   res.status(201).json(newMessage);
@@ -46,6 +48,13 @@ const getConversation = asyncHandler(async (req, res) => {
       { sender: otherUserId, receiver: req.user.id }
     ]
   }).sort({ createdAt: 1 });
+
+  const io = getIo();
+  if (io) {
+    const unreadCount = await Message.countDocuments({ receiver: req.user.id, read: false });
+    io.to(req.user.id).emit('unread_count_update', unreadCount);
+  }
+
   res.status(200).json(messages);
 });
 
@@ -76,7 +85,7 @@ const deleteMessage = asyncHandler(async (req, res) => {
   const receiverId = message.receiver.toString();
   await Message.findByIdAndDelete(req.params.messageId);
 
-  const io = req.app.get('io');
+  const io = getIo();
   if (io) {
     io.to(receiverId).emit('message_deleted', { messageId: req.params.messageId });
   }

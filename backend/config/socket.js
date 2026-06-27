@@ -2,6 +2,7 @@ const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 
 const onlineUsers = new Map();
+let ioInstance = null;
 
 const initSocket = (server, corsOrigin) => {
   const io = new Server(server, {
@@ -11,6 +12,8 @@ const initSocket = (server, corsOrigin) => {
       credentials: true
     }
   });
+
+  ioInstance = io;
 
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
@@ -83,4 +86,6 @@ const initSocket = (server, corsOrigin) => {
 
 const isUserOnline = (userId) => onlineUsers.has(userId);
 
-module.exports = { initSocket, isUserOnline };
+const getIo = () => ioInstance;
+
+module.exports = { initSocket, isUserOnline, getIo };
