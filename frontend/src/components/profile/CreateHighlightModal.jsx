@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import Modal from '../common/Modal';
 import { storyService } from '../../services/storyService';
 import { uploadService } from '../../services/uploadService';
+import { ImagePlus, Loader2 } from 'lucide-react';
 
 const CreateHighlightModal = ({ onClose, onCreated }) => {
   const [title, setTitle] = useState('');
@@ -85,7 +86,10 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || submitting}
           >
-            {uploading ? 'Uploading…' : (preview ? 'Change Image' : '📷 Upload Image')}
+            {uploading
+              ? <><Loader2 size={16} className="spin" /> Uploading…</>
+              : <><ImagePlus size={16} /> {preview ? 'Change Image' : 'Upload Image'}</>
+            }
           </button>
         </div>
 

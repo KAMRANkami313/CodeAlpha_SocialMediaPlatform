@@ -12,7 +12,7 @@ import EmptyState from '../components/common/EmptyState';
 import { ProfileSkeleton } from '../components/common/Skeleton';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import CreateHighlightModal from '../components/profile/CreateHighlightModal';
-import { FileText, Bookmark, Archive as ArchiveIcon, Eye, ArchiveRestore, Trash2 } from 'lucide-react';
+import { FileText, Bookmark, Archive as ArchiveIcon, ArchiveRestore, Trash2, X, Star } from 'lucide-react';
 
 const Profile = () => {
   const { id } = useParams();
@@ -188,7 +188,9 @@ const Profile = () => {
               {h.image ? (
                 <img src={h.image} alt={h.title} className="highlight-circle-img" />
               ) : (
-                <span className="highlight-circle-placeholder">★</span>
+                <span className="highlight-circle-placeholder">
+                  <Star size={24} fill="currentColor" />
+                </span>
               )}
               <span className="highlight-circle-title">{h.title || 'Untitled'}</span>
             </button>
@@ -324,8 +326,8 @@ const Profile = () => {
             onClick={() => setActiveHighlight(null)}
             aria-label="Close"
           >
-            ×
-          </button>
+            <X size={22} />
+          </button>          
           <div className="highlight-viewer-content" onClick={(e) => e.stopPropagation()}>
             {activeHighlight.image ? (
               <img src={activeHighlight.image} alt={activeHighlight.title} className="highlight-viewer-img" />

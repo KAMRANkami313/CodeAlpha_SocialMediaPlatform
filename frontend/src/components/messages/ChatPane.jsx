@@ -10,7 +10,6 @@ import {
   Send,
   Download,
   ExternalLink,
-  ZoomIn,
   Loader2,
   CheckCheck,
   MessageSquare

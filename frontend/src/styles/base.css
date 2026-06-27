@@ -94,3 +94,60 @@ img {
     scroll-behavior: auto !important;
   }
 }
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.navbar-icon-btn:focus-visible,
+.navbar-link-with-icon:focus-visible,
+.navbar-mobile-link:focus-visible,
+.navbar-mobile-toggle:focus-visible,
+.post-action-btn:focus-visible,
+.modal-close-btn:focus-visible,
+.chat-attach-btn:focus-visible,
+.chat-send-btn:focus-visible,
+.chat-react-btn:focus-visible,
+.chat-delete-btn:focus-visible,
+.chat-sidebar-toggle:focus-visible,
+.chat-image-lightbox-close:focus-visible,
+.chat-image-lightbox-action-btn:focus-visible,
+.search-clear-btn:focus-visible,
+.search-recent-remove:focus-visible,
+.search-recent-clear:focus-visible,
+.auth-input-action:focus-visible,
+.profile-action-btn:focus-visible,
+.profile-edit-upload-btn:focus-visible,
+.blocked-unblock-btn:focus-visible,
+.settings-tab:focus-visible,
+.settings-danger-btn:focus-visible,
+.follow-link:focus-visible,
+.explore-view-btn:focus-visible,
+.feed-clear-btn:focus-visible,
+.share-post-user:focus-visible,
+.share-post-search:focus-visible,
+.highlight-circle:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  background: var(--accent);
+  color: #ffffff;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  z-index: 10000;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--text-sm);
+}

@@ -197,10 +197,10 @@ const PostCard = ({
         </div>
         {isOwnPost ? (
           <div className="post-header-actions">
-            <button className="post-action-btn edit" onClick={() => handleStartEdit(post)} aria-label="Edit post" title="Edit">
+            <button className="post-action-btn edit" onClick={() => handleStartEdit(post)} aria-label="Edit post" title="Edit post">
               <Pencil size={16} />
             </button>
-            <button className="post-action-btn delete" onClick={() => handleDeletePost(post._id)} aria-label="Delete post" title="Delete">
+            <button className="post-action-btn delete" onClick={() => handleDeletePost(post._id)} aria-label="Delete post" title="Delete post">
               <Trash2 size={16} />
             </button>
             <div className="post-menu-container" ref={menuRef}>
@@ -209,6 +209,7 @@ const PostCard = ({
                 onClick={() => setShowMenu(!showMenu)}
                 aria-label="Post options"
                 aria-expanded={showMenu}
+                title="More options"
               >
                 <MoreHorizontal size={18} />
               </button>
@@ -233,6 +234,7 @@ const PostCard = ({
                 onClick={() => setShowMenu(!showMenu)}
                 aria-label="Post options"
                 aria-expanded={showMenu}
+                title="More options"
               >
                 <MoreHorizontal size={18} />
               </button>
@@ -257,19 +259,34 @@ const PostCard = ({
       {post.image && <img src={post.image} alt="Post content" className="post-image" />}
       <div className="post-actions" style={{ justifyContent: 'space-between' }}>
         <div className="post-action-group">
-          <button className={`post-action-btn ${isLiked ? 'liked' : ''}`} onClick={() => handleLike(post._id)} aria-label={isLiked ? 'Unlike' : 'Like'}>
+          <button
+            className={`post-action-btn ${isLiked ? 'liked' : ''}`}
+            onClick={() => handleLike(post._id)}
+            aria-label={isLiked ? 'Unlike' : 'Like'}
+            title={isLiked ? 'Unlike' : 'Like'}
+          >
             <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
           </button>
           <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
             {post.likes.length} likes
           </span>
-          <button className="post-action-btn" onClick={() => handleToggleComments(post._id)} aria-label="Comments">
+          <button
+            className="post-action-btn"
+            onClick={() => handleToggleComments(post._id)}
+            aria-label="Comments"
+            title="Comments"
+          >
             <MessageCircle size={20} />
           </button>
           <span className="post-action-info">
             {post.comments.length} comments
           </span>
-          <button className={`post-action-btn ${copied ? 'copied' : ''}`} onClick={() => handleShareLink(post._id)} aria-label="Copy link" title="Copy link">
+          <button
+            className={`post-action-btn ${copied ? 'copied' : ''}`}
+            onClick={() => handleShareLink(post._id)}
+            aria-label="Copy link"
+            title="Copy link"
+          >
             <Link2 size={18} />
           </button>
           {onShareToDM && (
@@ -292,6 +309,7 @@ const PostCard = ({
             className={`post-action-btn ${isSaved ? 'saved' : ''}`}
             onClick={() => handleSave(post._id)}
             aria-label={isSaved ? 'Remove from saved' : 'Save post'}
+            title={isSaved ? 'Remove from saved' : 'Save post'}
           >
             <Bookmark size={20} fill={isSaved ? 'currentColor' : 'none'} />
           </button>
