@@ -11,6 +11,7 @@ import UserListModal from '../components/common/UserListModal';
 import EmptyState from '../components/common/EmptyState';
 import { ProfileSkeleton } from '../components/common/Skeleton';
 import ProfileHeader from '../components/profile/ProfileHeader';
+import CreateHighlightModal from '../components/profile/CreateHighlightModal';
 
 const Profile = () => {
   const { id } = useParams();
@@ -27,6 +28,28 @@ const Profile = () => {
   const [userListModal, setUserListModal] = useState(null);
   const [userListTitle, setUserListTitle] = useState('');
   const [activeHighlight, setActiveHighlight] = useState(null);
+  const [showCreateHighlight, setShowCreateHighlight] = useState(false);
+
+  const handleHighlightCreated = async () => {
+    setShowCreateHighlight(false);
+    try {
+      const res = await storyService.getHighlights(id);
+      setHighlights(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteHighlight = async (highlightId) => {
+    if (!window.confirm('Delete this highlight?')) return;
+    try {
+      await storyService.deleteHighlight(highlightId);
+      setHighlights(prev => prev.filter(h => h._id !== highlightId));
+      setActiveHighlight(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -114,8 +137,14 @@ const Profile = () => {
 
   let displayedPosts;
   if (activeTab === 'posts') displayedPosts = posts.filter(p => !p.isArchived);
-  else if (activeTab === 'saved') displayedPosts = profile.savedPosts || [];
-  else if (activeTab === 'archived') displayedPosts = archivedPosts;
+  else if (activeTab === 'saved') {
+    const seen = new Set();
+    displayedPosts = (profile.savedPosts || []).filter((p) => {
+      if (seen.has(p._id)) return false;
+      seen.add(p._id);
+      return true;
+    });
+  } else if (activeTab === 'archived') displayedPosts = archivedPosts;
 
   return (
     <div className="container" style={{ maxWidth: '1024px' }}>
@@ -138,6 +167,16 @@ const Profile = () => {
 
       {(highlights.length > 0 || isMe) && (
         <div className="highlights-row">
+          {isMe && (
+            <button
+              className="highlight-circle highlight-circle-new"
+              onClick={() => setShowCreateHighlight(true)}
+              title="Create new highlight"
+            >
+              <span className="highlight-circle-plus">+</span>
+              <span className="highlight-circle-title">New</span>
+            </button>
+          )}
           {highlights.map((h) => (
             <button
               key={h._id}
@@ -155,7 +194,7 @@ const Profile = () => {
           ))}
           {isMe && highlights.length === 0 && (
             <div className="highlights-empty">
-              Your saved story highlights will appear here.
+              Tap "New" to save your first story highlight. Highlights stay on your profile permanently.
             </div>
           )}
         </div>
@@ -203,8 +242,8 @@ const Profile = () => {
             }
           />
         )}
-        {displayedPosts.map((post) => (
-          <div className={`post-card ${post.isArchived ? 'post-card-archived' : ''}`} key={`${activeTab}-${post._id}`}>
+        {displayedPosts.map((post, index) => (
+          <div className={`post-card ${post.isArchived ? 'post-card-archived' : ''}`} key={`${activeTab}-${post._id}-${index}`}>
             <div className="post-header">
               <Avatar
                 src={post.user.profilePicture}
@@ -289,8 +328,23 @@ const Profile = () => {
               <div className="highlight-viewer-placeholder">No image</div>
             )}
             <div className="highlight-viewer-title">{activeHighlight.title || 'Untitled'}</div>
+            {isMe && (
+              <button
+                className="btn settings-danger-btn highlight-viewer-delete"
+                onClick={() => handleDeleteHighlight(activeHighlight._id)}
+              >
+                Delete Highlight
+              </button>
+            )}
           </div>
         </div>
+      )}
+
+      {showCreateHighlight && (
+        <CreateHighlightModal
+          onClose={() => setShowCreateHighlight(false)}
+          onCreated={handleHighlightCreated}
+        />
       )}
     </div>
   );

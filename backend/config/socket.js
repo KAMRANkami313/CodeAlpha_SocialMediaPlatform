@@ -33,6 +33,8 @@ const initSocket = (server, corsOrigin) => {
     const userId = socket.userId;
     onlineUsers.set(userId, socket.id);
 
+    socket.join(userId);
+
     io.emit('user_online', userId);
 
     socket.on('join_conversation', (otherUserId) => {

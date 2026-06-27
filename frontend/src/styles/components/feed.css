@@ -366,7 +366,8 @@
 
 @media (max-width: 768px) {
   .sidebar-widget {
-    display: none;
+    position: static;
+    margin-top: var(--space-6);
   }
 }
 
