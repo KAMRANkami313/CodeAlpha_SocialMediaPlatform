@@ -56,6 +56,9 @@ const login = asyncHandler(async (req, res) => {
   if (!isMatch) {
     return res.status(400).json({ message: 'Invalid credentials' });
   }
+  if (user.isSuspended) {
+    return res.status(403).json({ message: 'Your account has been suspended. Please contact support if you believe this is an error.' });
+  }
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.status(200).json({
     token,
@@ -66,7 +69,8 @@ const login = asyncHandler(async (req, res) => {
       bio: user.bio,
       profilePicture: user.profilePicture,
       isVerified: user.isVerified,
-      isEmailVerified: user.isEmailVerified
+      isEmailVerified: user.isEmailVerified,
+      role: user.role
     }
   });
 });
