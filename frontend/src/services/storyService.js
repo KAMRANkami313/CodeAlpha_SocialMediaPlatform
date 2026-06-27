@@ -5,5 +5,14 @@ export const storyService = {
     API.post('/stories', { image, text }),
 
   getActiveStories: () =>
-    API.get('/stories')
+    API.get('/stories'),
+
+  createHighlight: (title, image, storyIds = []) =>
+    API.post('/stories/highlights', { title, image, storyIds }),
+
+  getHighlights: (userId) =>
+    API.get(`/stories/highlights/${userId}`),
+
+  deleteHighlight: (highlightId) =>
+    API.delete(`/stories/highlights/${highlightId}`)
 };

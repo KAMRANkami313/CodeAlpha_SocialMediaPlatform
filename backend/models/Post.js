@@ -25,7 +25,11 @@ const postSchema = new mongoose.Schema({
   views: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
-  }]
+  }],
+  isArchived: {
+    type: Boolean,
+    default: false
+  }
 }, {
   timestamps: true
 });

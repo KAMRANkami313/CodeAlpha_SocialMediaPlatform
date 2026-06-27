@@ -22,9 +22,9 @@ const getAllPosts = asyncHandler(async (req, res) => {
   const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || PAGE_SIZE));
   const skip = (page - 1) * limit;
 
-  let filter = {};
+  let filter = { isArchived: { $ne: true } };
   if (tag) {
-    filter = { caption: { $regex: `#${tag}`, $options: 'i' } };
+    filter = { isArchived: { $ne: true }, caption: { $regex: `#${tag}`, $options: 'i' } };
   }
 
   const [posts, total] = await Promise.all([
@@ -42,7 +42,12 @@ const getAllPosts = asyncHandler(async (req, res) => {
 });
 
 const getUserPosts = asyncHandler(async (req, res) => {
-  const posts = await findPostsPopulated({ user: req.params.userId }).sort({ createdAt: -1 });
+  const isOwner = req.user && req.user.id === req.params.userId;
+  const filter = { user: req.params.userId };
+  if (!isOwner) {
+    filter.isArchived = { $ne: true };
+  }
+  const posts = await findPostsPopulated(filter).sort({ createdAt: -1 });
   res.status(200).json(posts);
 });
 
@@ -81,11 +86,48 @@ const updatePost = asyncHandler(async (req, res) => {
   res.status(200).json(populatedPost);
 });
 
+const archivePost = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+  if (post.user.toString() !== req.user.id) {
+    return res.status(401).json({ message: 'Unauthorized action' });
+  }
+  post.isArchived = true;
+  await post.save();
+  res.status(200).json({ message: 'Post archived successfully', isArchived: true });
+});
+
+const unarchivePost = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+  if (post.user.toString() !== req.user.id) {
+    return res.status(401).json({ message: 'Unauthorized action' });
+  }
+  post.isArchived = false;
+  await post.save();
+  res.status(200).json({ message: 'Post restored successfully', isArchived: false });
+});
+
+const getArchivedPosts = asyncHandler(async (req, res) => {
+  const posts = await findPostsPopulated({
+    user: req.user.id,
+    isArchived: true
+  }).sort({ createdAt: -1 });
+  res.status(200).json(posts);
+});
+
 module.exports = {
   createPost,
   getAllPosts,
   getUserPosts,
   deletePost,
   getPostById,
-  updatePost
+  updatePost,
+  archivePost,
+  unarchivePost,
+  getArchivedPosts
 };

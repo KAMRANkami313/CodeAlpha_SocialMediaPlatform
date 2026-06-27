@@ -637,3 +637,112 @@
     max-width: 85%;
   }
 }
+
+.chat-layout {
+  position: relative;
+}
+
+.chat-layout.sidebar-closed {
+  grid-template-columns: 1fr;
+}
+
+.chat-layout.sidebar-closed .chat-sidebar {
+  display: none;
+}
+
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  min-height: 44px;
+}
+
+.chat-sidebar-toggle {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.chat-sidebar-toggle:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chat-toolbar-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-color);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9;
+  animation: backdropFadeIn var(--transition-fast);
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 769px) {
+  .chat-toolbar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-layout,
+  .chat-layout.sidebar-closed,
+  .chat-layout.sidebar-open {
+    grid-template-columns: 1fr;
+    position: relative;
+  }
+  .chat-layout .chat-sidebar,
+  .chat-layout.sidebar-closed .chat-sidebar {
+    display: none;
+  }
+  .chat-layout.sidebar-open .chat-sidebar {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background: var(--bg-elevated);
+  }
+  .chat-layout.sidebar-open .chat-pane-wrapper {
+    visibility: hidden;
+  }
+  .chat-toolbar {
+    display: flex;
+  }
+}

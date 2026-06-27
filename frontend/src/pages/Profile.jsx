@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
+import { storyService } from '../services/storyService';
 import Avatar from '../components/common/Avatar';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import LikersModal from '../components/common/LikersModal';
@@ -17,12 +18,15 @@ const Profile = () => {
   const { user, setUser, logoutUser } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [archivedPosts, setArchivedPosts] = useState([]);
+  const [highlights, setHighlights] = useState([]);
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
 
   const [activeLikers, setActiveLikers] = useState(null);
   const [userListModal, setUserListModal] = useState(null);
   const [userListTitle, setUserListTitle] = useState('');
+  const [activeHighlight, setActiveHighlight] = useState(null);
 
   const fetchProfile = async () => {
     try {
@@ -30,16 +34,25 @@ const Profile = () => {
       setProfile(resProfile.data);
       const resPosts = await postService.getUserPosts(id);
       setPosts(resPosts.data);
+      const resHighlights = await storyService.getHighlights(id).catch(() => ({ data: [] }));
+      setHighlights(resHighlights.data || []);
+      if (user && id === user.id) {
+        const resArchived = await postService.getArchivedPosts().catch(() => ({ data: [] }));
+        setArchivedPosts(resArchived.data || []);
+      } else {
+        setArchivedPosts([]);
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
+    setProfile(null);
     fetchProfile();
     setActiveTab('posts');
     setUserListModal(null);
-  }, [id]);
+  }, [id, user?.id]);
 
   const handleFollowUnfollow = async () => {
     const isFollowing = profile.followers.some(f => f._id === user.id);
@@ -59,7 +72,7 @@ const Profile = () => {
     navigate('/messages', { state: { startChatWith: profile } });
   };
 
-    const handleAccountDeleted = () => {
+  const handleAccountDeleted = () => {
     logoutUser();
     navigate('/');
   };
@@ -70,6 +83,24 @@ const Profile = () => {
     setUserListTitle(title);
   };
 
+  const handleArchiveToggle = (postId) => {
+    const toggled = posts.find(p => p._id === postId);
+    if (!toggled) return;
+    const newArchivedState = !toggled.isArchived;
+    setPosts(prev => prev.map(p => p._id === postId ? { ...p, isArchived: newArchivedState } : p));
+    if (newArchivedState) {
+      const moved = { ...toggled, isArchived: true };
+      setArchivedPosts(prev => [moved, ...prev.filter(p => p._id !== postId)]);
+      setActiveTab('archived');
+    } else {
+      const moved = { ...toggled, isArchived: false };
+      setArchivedPosts(prev => prev.filter(p => p._id !== postId));
+      setPosts(prev => [moved, ...prev.filter(p => p._id !== postId)]);
+      setActiveTab('posts');
+    }
+  };
+
+  if (!user) return null;
   if (!profile) {
     return (
       <div className="container" style={{ maxWidth: '1024px' }}>
@@ -80,7 +111,11 @@ const Profile = () => {
 
   const isMe = user?.id === profile._id;
   const isFollowing = profile.followers.some(f => f._id === user?.id);
-  const displayedPosts = activeTab === 'posts' ? posts : profile.savedPosts;
+
+  let displayedPosts;
+  if (activeTab === 'posts') displayedPosts = posts.filter(p => !p.isArchived);
+  else if (activeTab === 'saved') displayedPosts = profile.savedPosts || [];
+  else if (activeTab === 'archived') displayedPosts = archivedPosts;
 
   return (
     <div className="container" style={{ maxWidth: '1024px' }}>
@@ -101,6 +136,31 @@ const Profile = () => {
         onAccountDeleted={handleAccountDeleted}
       />
 
+      {(highlights.length > 0 || isMe) && (
+        <div className="highlights-row">
+          {highlights.map((h) => (
+            <button
+              key={h._id}
+              className="highlight-circle"
+              onClick={() => setActiveHighlight(h)}
+              title={h.title}
+            >
+              {h.image ? (
+                <img src={h.image} alt={h.title} className="highlight-circle-img" />
+              ) : (
+                <span className="highlight-circle-placeholder">★</span>
+              )}
+              <span className="highlight-circle-title">{h.title || 'Untitled'}</span>
+            </button>
+          ))}
+          {isMe && highlights.length === 0 && (
+            <div className="highlights-empty">
+              Your saved story highlights will appear here.
+            </div>
+          )}
+        </div>
+      )}
+
       {isMe && (
         <div className="profile-tabs">
           <button
@@ -115,19 +175,36 @@ const Profile = () => {
           >
             Saved Posts
           </button>
+          <button
+            className={`profile-tab ${activeTab === 'archived' ? 'active' : ''}`}
+            onClick={() => setActiveTab('archived')}
+          >
+            Archived
+            {archivedPosts.length > 0 && (
+              <span className="profile-tab-count">{archivedPosts.length}</span>
+            )}
+          </button>
         </div>
       )}
 
       <div className="profile-posts-grid">
         {displayedPosts.length === 0 && (
           <EmptyState
-            icon={activeTab === 'saved' ? '🔖' : '📝'}
-            title={activeTab === 'saved' ? 'No saved posts' : 'No posts yet'}
-            message={activeTab === 'saved' ? 'Posts you save will appear here.' : 'When this user shares posts, they will appear here.'}
+            icon={activeTab === 'saved' ? '🔖' : activeTab === 'archived' ? '🗄️' : '📝'}
+            title={
+              activeTab === 'saved' ? 'No saved posts'
+              : activeTab === 'archived' ? 'No archived posts'
+              : 'No posts yet'
+            }
+            message={
+              activeTab === 'saved' ? 'Posts you save will appear here.'
+              : activeTab === 'archived' ? 'Posts you archive will appear here. They stay hidden from your feed and profile.'
+              : 'When this user shares posts, they will appear here.'
+            }
           />
         )}
         {displayedPosts.map((post) => (
-          <div className="post-card" key={`${activeTab}-${post._id}`}>
+          <div className={`post-card ${post.isArchived ? 'post-card-archived' : ''}`} key={`${activeTab}-${post._id}`}>
             <div className="post-header">
               <Avatar
                 src={post.user.profilePicture}
@@ -138,6 +215,9 @@ const Profile = () => {
                 {post.user.username}
                 <VerifiedBadge show={post.user.isVerified} />
               </strong>
+              {post.isArchived && (
+                <span className="archived-pill">Archived</span>
+              )}
             </div>
             {post.image && <img src={post.image} alt="Post content" className="post-image" />}
             <div className="post-actions" style={{ padding: 'var(--space-3) var(--space-4) 0 var(--space-4)' }}>
@@ -148,6 +228,35 @@ const Profile = () => {
             <div className="post-content">
               <p>{post.caption}</p>
             </div>
+            {isMe && activeTab === 'archived' && (
+              <div style={{ padding: '0 var(--space-4) var(--space-3)', display: 'flex', gap: 'var(--space-2)' }}>
+                <button
+                  className="btn"
+                  style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)' }}
+                  onClick={async () => {
+                    try {
+                      await postService.unarchivePost(post._id);
+                      handleArchiveToggle(post._id);
+                    } catch (err) { console.error(err); }
+                  }}
+                >
+                  Restore
+                </button>
+                <button
+                  className="btn settings-danger-btn"
+                  style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)' }}
+                  onClick={async () => {
+                    if (!window.confirm('Permanently delete this post?')) return;
+                    try {
+                      await postService.deletePost(post._id);
+                      setArchivedPosts(prev => prev.filter(p => p._id !== post._id));
+                    } catch (err) { console.error(err); }
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -162,6 +271,26 @@ const Profile = () => {
           users={userListModal}
           onClose={() => setUserListModal(null)}
         />
+      )}
+
+      {activeHighlight && (
+        <div className="highlight-viewer" onClick={() => setActiveHighlight(null)}>
+          <button
+            className="highlight-viewer-close"
+            onClick={() => setActiveHighlight(null)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <div className="highlight-viewer-content" onClick={(e) => e.stopPropagation()}>
+            {activeHighlight.image ? (
+              <img src={activeHighlight.image} alt={activeHighlight.title} className="highlight-viewer-img" />
+            ) : (
+              <div className="highlight-viewer-placeholder">No image</div>
+            )}
+            <div className="highlight-viewer-title">{activeHighlight.title || 'Untitled'}</div>
+          </div>
+        </div>
       )}
     </div>
   );

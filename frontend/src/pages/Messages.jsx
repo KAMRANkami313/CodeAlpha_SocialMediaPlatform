@@ -6,6 +6,8 @@ import { messageService } from '../services/messageService';
 import ConversationList from '../components/messages/ConversationList';
 import ChatPane from '../components/messages/ChatPane';
 
+const MOBILE_BREAKPOINT = 768;
+
 const Messages = () => {
   const { user } = useContext(AuthContext);
   const { socket, onlineUsers } = useContext(SocketContext);
@@ -14,6 +16,9 @@ const Messages = () => {
   const [activePartner, setActivePartner] = useState(null);
   const [messages, setMessages] = useState([]);
   const [shareStatus, setShareStatus] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= MOBILE_BREAKPOINT : true
+  );
   const sharedPostSentRef = useRef(false);
 
   const fetchConversations = useCallback(async () => {
@@ -48,6 +53,9 @@ const Messages = () => {
     const startWith = location.state?.startChatWith;
     if (startWith) {
       setActivePartner(startWith);
+      if (typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT) {
+        setSidebarOpen(false);
+      }
     }
   }, [location.state, fetchConversations]);
 
@@ -146,6 +154,15 @@ const Messages = () => {
     })();
   }, [location.state, activePartner]);
 
+  const handleSelectPartner = (partner) => {
+    setActivePartner(partner);
+    if (typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT) {
+      setSidebarOpen(false);
+    }
+  };
+
+  if (!user) return null;
+
   const isPartnerOnline = activePartner && onlineUsers && onlineUsers.has(activePartner._id);
 
   return (
@@ -157,23 +174,45 @@ const Messages = () => {
           {shareStatus === 'error' && '⚠ Could not share post. Is the backend running?'}
         </div>
       )}
-      <div className="chat-layout">
+      <div className={`chat-layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
         <ConversationList
           conversations={conversations}
           activePartner={activePartner}
-          onSelectPartner={setActivePartner}
+          onSelectPartner={handleSelectPartner}
           onlineUsers={onlineUsers}
         />
-        <ChatPane
-          activePartner={activePartner}
-          user={user}
-          messages={messages}
-          onMessageSent={handleMessageSent}
-          onMessageDeleted={handleMessageDeleted}
-          onMessageReacted={handleMessageReacted}
-          isPartnerOnline={isPartnerOnline}
-        />
+        <div className="chat-pane-wrapper">
+          <div className="chat-toolbar">
+            <button
+              className="chat-sidebar-toggle"
+              onClick={() => setSidebarOpen(o => !o)}
+              aria-label={sidebarOpen ? 'Hide conversations' : 'Show conversations'}
+              aria-expanded={sidebarOpen}
+            >
+              {sidebarOpen ? '✕' : '☰'}
+            </button>
+            <span className="chat-toolbar-title">
+              {activePartner ? `Chat with ${activePartner.username}` : 'Messages'}
+            </span>
+          </div>
+          <ChatPane
+            activePartner={activePartner}
+            user={user}
+            messages={messages}
+            onMessageSent={handleMessageSent}
+            onMessageDeleted={handleMessageDeleted}
+            onMessageReacted={handleMessageReacted}
+            isPartnerOnline={isPartnerOnline}
+          />
+        </div>
       </div>
+      {sidebarOpen && typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT && (
+        <div
+          className="chat-sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
     </div>
   );
 };

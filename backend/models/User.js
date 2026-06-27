@@ -71,7 +71,31 @@ const userSchema = new mongoose.Schema({
   emailVerificationExpires: {
     type: Date,
     default: null
-  }
+  },
+  highlights: [
+    {
+      title: {
+        type: String,
+        default: '',
+        trim: true,
+        maxlength: 30
+      },
+      image: {
+        type: String,
+        default: ''
+      },
+      storyIds: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Story'
+        }
+      ],
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
 }, {
   timestamps: true
 });

@@ -16,13 +16,23 @@ const evaluateActivityStatus = (lastActivityDate) => {
   return difference < ACTIVITY_THRESHOLD_MS;
 };
 
-const PostCard = ({ post, user, setUser, onPostUpdated, onShare,onShareToDM, onTagClick, setActiveLikers }) => {
+const PostCard = ({
+  post,
+  user,
+  setUser,
+  onPostUpdated,
+  onShare,
+  onShareToDM,
+  onTagClick,
+  setActiveLikers,
+  onArchiveToggle
+}) => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editCaptionText, setEditCaptionText] = useState('');
   const [visibleComments, setVisibleComments] = useState({});
   const [showMenu, setShowMenu] = useState(false);
   const [showReport, setShowReport] = useState(false);
-   const [showShare, setShowShare] = useState(false);
+  const [showShare, setShowShare] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -100,6 +110,24 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare,onShareToDM, onT
     }
   };
 
+  const handleArchiveToggle = async (postId) => {
+    setShowMenu(false);
+    try {
+      if (post.isArchived) {
+        await postService.unarchivePost(postId);
+      } else {
+        await postService.archivePost(postId);
+      }
+      if (onArchiveToggle) {
+        onArchiveToggle(postId);
+      } else {
+        onPostUpdated();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const renderCaption = (text) => {
     const parts = text.split(/(\s+)/);
     return parts.map((part, index) => {
@@ -123,7 +151,7 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare,onShareToDM, onT
   const isOwnPost = user && user.id === post.user._id;
 
   return (
-    <div className="post-card">
+    <div className={`post-card ${post.isArchived ? 'post-card-archived' : ''}`}>
       {user && <PostViewTracker postId={post._id} />}
       <div className="post-header" style={{ justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -141,6 +169,9 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare,onShareToDM, onT
             {post.user.username}
             <VerifiedBadge show={post.user.isVerified} />
           </Link>
+          {post.isArchived && (
+            <span className="archived-pill" title="This post is archived">Archived</span>
+          )}
         </div>
         {isOwnPost ? (
           <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
@@ -150,6 +181,25 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare,onShareToDM, onT
             <button className="delete-btn" onClick={() => handleDeletePost(post._id)}>
               Delete
             </button>
+            <div className="post-menu-container" ref={menuRef}>
+              <button
+                className="like-btn post-menu-trigger"
+                onClick={() => setShowMenu(!showMenu)}
+                aria-label="Post options"
+              >
+                ⋯
+              </button>
+              {showMenu && (
+                <div className="post-menu-dropdown">
+                  <button
+                    className="post-menu-item"
+                    onClick={() => handleArchiveToggle(post._id)}
+                  >
+                    {post.isArchived ? 'Unarchive Post' : 'Archive Post'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           user && (

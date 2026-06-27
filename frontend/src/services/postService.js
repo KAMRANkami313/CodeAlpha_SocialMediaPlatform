@@ -13,6 +13,15 @@ export const postService = {
   getUserPosts: (userId) =>
     API.get(`/posts/user/${userId}`),
 
+  getArchivedPosts: () =>
+    API.get('/posts/archived'),
+
+  archivePost: (postId) =>
+    API.post(`/posts/${postId}/archive`),
+
+  unarchivePost: (postId) =>
+    API.post(`/posts/${postId}/unarchive`),
+
   deletePost: (postId) =>
     API.delete(`/posts/${postId}`),
 

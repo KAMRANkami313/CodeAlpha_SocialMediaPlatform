@@ -37,7 +37,48 @@ const getActiveStories = asyncHandler(async (req, res) => {
   res.status(200).json(Object.values(groupedStories));
 });
 
+const createHighlight = asyncHandler(async (req, res) => {
+  const { title, image, storyIds } = req.body;
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  user.highlights.push({
+    title: title || '',
+    image: image || '',
+    storyIds: Array.isArray(storyIds) ? storyIds : []
+  });
+  await user.save();
+  const created = user.highlights[user.highlights.length - 1];
+  res.status(201).json(created);
+});
+
+const getHighlights = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.userId).select('highlights');
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  res.status(200).json(user.highlights || []);
+});
+
+const deleteHighlight = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  const highlight = user.highlights.id(req.params.highlightId);
+  if (!highlight) {
+    return res.status(404).json({ message: 'Highlight not found' });
+  }
+  user.highlights.pull(req.params.highlightId);
+  await user.save();
+  res.status(200).json({ message: 'Highlight deleted successfully' });
+});
+
 module.exports = {
   createStory,
-  getActiveStories
+  getActiveStories,
+  createHighlight,
+  getHighlights,
+  deleteHighlight
 };
