@@ -1,10 +1,14 @@
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
+import { MessageCircle } from 'lucide-react';
 
 const ConversationList = ({ conversations, activePartner, onSelectPartner, onlineUsers }) => {
   return (
     <div className="chat-sidebar">
-      <div className="chat-sidebar-title">Chats</div>
+      <div className="chat-sidebar-title">
+        <MessageCircle size={16} />
+        <span>Chats</span>
+      </div>
       {conversations.map((c) => {
         const isOnline = onlineUsers && onlineUsers.has(c._id);
         return (
@@ -30,8 +34,9 @@ const ConversationList = ({ conversations, activePartner, onSelectPartner, onlin
         );
       })}
       {conversations.length === 0 && (
-        <div style={{ padding: 'var(--space-6) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center' }}>
-          No active chats
+        <div className="chat-sidebar-empty">
+          <MessageCircle size={28} />
+          <span>No active chats</span>
         </div>
       )}
     </div>

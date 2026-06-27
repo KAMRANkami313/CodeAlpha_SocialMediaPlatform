@@ -746,3 +746,131 @@
     display: flex;
   }
 }
+
+.chat-sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chat-sidebar-title svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.chat-sidebar-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--secondary-text);
+  text-align: center;
+}
+
+.chat-sidebar-empty svg {
+  opacity: 0.4;
+}
+
+.chat-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  height: 100%;
+  color: var(--secondary-text);
+  font-size: var(--text-sm);
+}
+
+.chat-empty-state svg {
+  opacity: 0.4;
+}
+
+.chat-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.chat-react-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.chat-attach-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+}
+
+.chat-attach-btn:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.chat-send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-gradient);
+  color: #ffffff;
+}
+
+.chat-send-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.chat-uploading-bubble {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  opacity: 0.6;
+}
+
+.chat-uploading-bubble .spin {
+  color: #ffffff;
+}
+
+.chat-read-receipt {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.chat-image-lightbox-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-image-lightbox-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.share-post-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.share-post-toast .spin {
+  color: var(--text-color);
+}
+
+.share-post-toast--sent .spin,
+.share-post-toast--error .spin {
+  color: #ffffff;
+}
+
+.chat-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

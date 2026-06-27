@@ -5,6 +5,7 @@ import { SocketContext } from '../context/SocketContext';
 import { messageService } from '../services/messageService';
 import ConversationList from '../components/messages/ConversationList';
 import ChatPane from '../components/messages/ChatPane';
+import { PanelLeftClose, PanelLeftOpen, Check, Loader2, AlertCircle } from 'lucide-react';
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -169,9 +170,9 @@ const Messages = () => {
     <div className="container" style={{ maxWidth: '935px' }}>
       {shareStatus && (
         <div className={`share-post-toast share-post-toast--${shareStatus}`}>
-          {shareStatus === 'sending' && 'Sharing post…'}
-          {shareStatus === 'sent' && '✓ Post shared!'}
-          {shareStatus === 'error' && '⚠ Could not share post. Is the backend running?'}
+          {shareStatus === 'sending' && <><Loader2 size={14} className="spin" /> Sharing post…</>}
+          {shareStatus === 'sent' && <><Check size={14} /> Post shared!</>}
+          {shareStatus === 'error' && <><AlertCircle size={14} /> Could not share post. Is the backend running?</>}
         </div>
       )}
       <div className={`chat-layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
@@ -189,7 +190,7 @@ const Messages = () => {
               aria-label={sidebarOpen ? 'Hide conversations' : 'Show conversations'}
               aria-expanded={sidebarOpen}
             >
-              {sidebarOpen ? '✕' : '☰'}
+              {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
             </button>
             <span className="chat-toolbar-title">
               {activePartner ? `Chat with ${activePartner.username}` : 'Messages'}

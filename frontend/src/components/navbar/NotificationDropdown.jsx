@@ -7,7 +7,10 @@ import { Bell, Heart, MessageCircle, UserPlus, Inbox } from 'lucide-react';
 const NotificationDropdown = ({ notifications, fetchNotifications, mobile = false }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const handleToggleNotifications = async () => {
+  const handleToggleNotifications = async (e) => {
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
     setShowNotifications(!showNotifications);
     if (!showNotifications && notifications.some(n => !n.read)) {
       try {
@@ -36,7 +39,10 @@ const NotificationDropdown = ({ notifications, fetchNotifications, mobile = fals
   };
 
   const renderDropdown = () => (
-    <div className={`notification-dropdown ${mobile ? 'notification-dropdown-mobile' : ''}`}>
+    <div
+      className={`notification-dropdown ${mobile ? 'notification-dropdown-mobile' : ''}`}
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="notification-dropdown-header">
         <span>Notifications</span>
         {unreadCount > 0 && <span className="notification-dropdown-count">{unreadCount} new</span>}

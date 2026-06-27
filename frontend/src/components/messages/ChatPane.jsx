@@ -3,6 +3,18 @@ import { messageService } from '../../services/messageService';
 import { uploadService } from '../../services/uploadService';
 import { SocketContext } from '../../context/SocketContext';
 import VerifiedBadge from '../common/VerifiedBadge';
+import {
+  X,
+  Smile,
+  Paperclip,
+  Send,
+  Download,
+  ExternalLink,
+  ZoomIn,
+  Loader2,
+  CheckCheck,
+  MessageSquare
+} from 'lucide-react';
 
 const REACTIONS = ['❤️', '😂', '👍', '😮', '😢', '🙏'];
 
@@ -203,8 +215,9 @@ const ChatPane = ({
   if (!activePartner) {
     return (
       <div className="chat-pane-wrapper">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--secondary-text)', fontSize: 'var(--text-sm)' }}>
-          Select a chat to begin messaging
+        <div className="chat-empty-state">
+          <MessageSquare size={40} />
+          <span>Select a chat to begin messaging</span>
         </div>
       </div>
     );
@@ -242,7 +255,7 @@ const ChatPane = ({
                       onClick={() => handleDeleteMessage(m._id)}
                       aria-label="Delete message"
                     >
-                      ×
+                      <X size={14} />
                     </button>
                   )}
                   {isImage ? (
@@ -263,7 +276,7 @@ const ChatPane = ({
                     aria-label="React to message"
                     type="button"
                   >
-                    😀
+                    <Smile size={14} />
                   </button>
 
                   {pickerFor === m._id && (
@@ -305,12 +318,16 @@ const ChatPane = ({
             </div>
           )}
           {uploading && (
-            <div className="chat-bubble mine" style={{ opacity: 0.6 }}>
-              <div>Uploading image...</div>
+            <div className="chat-bubble mine chat-uploading-bubble">
+              <Loader2 size={14} className="spin" />
+              <span>Uploading image...</span>
             </div>
           )}
           {showReadReceipt && (
-            <div className="chat-read-receipt">✓✓ Read</div>
+            <div className="chat-read-receipt">
+              <CheckCheck size={13} />
+              Read
+            </div>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -329,7 +346,7 @@ const ChatPane = ({
             disabled={uploading}
             aria-label="Send image"
           >
-            📷
+            <Paperclip size={20} />
           </button>
           <input
             type="text"
@@ -338,7 +355,9 @@ const ChatPane = ({
             onChange={handleTyping}
             required
           />
-          <button type="submit" disabled={uploading}>Send</button>
+          <button type="submit" disabled={uploading} aria-label="Send message" className="chat-send-btn">
+            <Send size={18} />
+          </button>
         </form>
       </div>
 
@@ -355,7 +374,7 @@ const ChatPane = ({
             onClick={() => setLightbox(null)}
             aria-label="Close preview"
           >
-            ×
+            <X size={22} />
           </button>
           <div className="chat-image-lightbox-actions" onClick={(e) => e.stopPropagation()}>
             <a
@@ -364,6 +383,7 @@ const ChatPane = ({
               rel="noopener noreferrer"
               className="chat-image-lightbox-action-btn"
             >
+              <ExternalLink size={14} />
               Open in new tab
             </a>
             <button
@@ -371,6 +391,7 @@ const ChatPane = ({
               className="chat-image-lightbox-action-btn"
               onClick={() => handleDownloadImage(lightbox)}
             >
+              <Download size={14} />
               Download
             </button>
           </div>
