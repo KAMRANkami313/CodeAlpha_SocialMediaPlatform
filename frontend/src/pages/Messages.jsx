@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { SocketContext } from '../context/SocketContext';
@@ -13,6 +13,7 @@ const Messages = () => {
   const [conversations, setConversations] = useState([]);
   const [activePartner, setActivePartner] = useState(null);
   const [messages, setMessages] = useState([]);
+  const sharedPostSentRef = useRef(false);
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -101,6 +102,27 @@ const Messages = () => {
     setMessages(prev => prev.filter(m => m._id !== messageId));
     fetchConversations();
   };
+
+  useEffect(() => {
+    const sharedPostId = location.state?.sharedPostId;
+    if (!sharedPostId || !activePartner || sharedPostSentRef.current) return;
+    sharedPostSentRef.current = true;
+    const author = location.state?.sharedPostAuthor;
+    const link = `${window.location.origin}/?postId=${sharedPostId}`;
+    const text = author
+      ? `Check out this post by @${author}: ${link}`
+      : `Check out this post: ${link}`;
+    (async () => {
+      try {
+        const res = await messageService.sendMessage(activePartner._id, text);
+        handleMessageSent(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        window.history.replaceState({}, document.title);
+      }
+    })();
+  }, [location.state, activePartner]);
 
   const isPartnerOnline = activePartner && onlineUsers && onlineUsers.has(activePartner._id);
 

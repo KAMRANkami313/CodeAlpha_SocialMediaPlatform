@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { postService } from '../services/postService';
 import { userService } from '../services/userService';
@@ -21,6 +21,7 @@ const Feed = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [stories, setStories] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const currentTag = searchParams.get('tag');
   const targetPostId = searchParams.get('postId');
 
@@ -122,6 +123,16 @@ const Feed = () => {
     showToast('Direct link copied to clipboard!');
   };
 
+  const handleShareToDM = (post, recipient) => {
+    navigate('/messages', {
+      state: {
+        startChatWith: recipient,
+        sharedPostId: post._id,
+        sharedPostAuthor: post.user?.username
+      }
+    });
+  };
+
   const handleTagClick = (tag) => {
     setSearchParams({ tag });
   };
@@ -160,6 +171,7 @@ const Feed = () => {
               setUser={setUser}
               onPostUpdated={handlePostUpdated}
               onShare={handleSharePost}
+              onShareToDM={handleShareToDM}
               onTagClick={handleTagClick}
               setActiveLikers={setActiveLikers}
             />

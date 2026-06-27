@@ -8,6 +8,7 @@ import VerifiedBadge from '../common/VerifiedBadge';
 import PostViewTracker from './PostViewTracker';
 import CommentSection from './CommentSection';
 import ReportModal from './ReportModal';
+import SharePostModal from './SharePostModal';
 
 const evaluateActivityStatus = (lastActivityDate) => {
   if (!lastActivityDate) return false;
@@ -15,12 +16,13 @@ const evaluateActivityStatus = (lastActivityDate) => {
   return difference < ACTIVITY_THRESHOLD_MS;
 };
 
-const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, setActiveLikers }) => {
+const PostCard = ({ post, user, setUser, onPostUpdated, onShare,onShareToDM, onTagClick, setActiveLikers }) => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editCaptionText, setEditCaptionText] = useState('');
   const [visibleComments, setVisibleComments] = useState({});
   const [showMenu, setShowMenu] = useState(false);
   const [showReport, setShowReport] = useState(false);
+   const [showShare, setShowShare] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -191,9 +193,19 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
           <span className="post-action-info">
             {post.comments.length} comments
           </span>
-          <button className="like-btn" onClick={() => onShare(post._id)}>
+          <button className="like-btn" onClick={() => onShare(post._id)} aria-label="Copy link">
             🔗
           </button>
+          {onShareToDM && (
+            <button
+              className="like-btn"
+              onClick={() => setShowShare(true)}
+              aria-label="Share via DM"
+              title="Share via DM"
+            >
+              ✈️
+            </button>
+          )}
           <span className="post-action-info">
             👁️ {post.views?.length || 0} views
           </span>
@@ -238,6 +250,17 @@ const PostCard = ({ post, user, setUser, onPostUpdated, onShare, onTagClick, set
 
       {showReport && (
         <ReportModal postId={post._id} onClose={() => setShowReport(false)} />
+      )}
+
+      {showShare && (
+        <SharePostModal
+          post={post}
+          onClose={() => setShowShare(false)}
+          onSelectUser={async (u) => {
+            await onShareToDM(post, u);
+            setShowShare(false);
+          }}
+        />
       )}
     </div>
   );
