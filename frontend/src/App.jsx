@@ -7,6 +7,8 @@ import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/navbar/Navbar';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
 import RouteLoader from './components/common/RouteLoader';
+import AdminRoute from './components/admin/AdminRoute';
+import AdminLayout from './components/admin/AdminLayout';
 
 const Feed = lazy(() => import('./pages/Feed'));
 const Login = lazy(() => import('./pages/Login'));
@@ -18,6 +20,9 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Messages = lazy(() => import('./pages/Messages'));
 const Explore = lazy(() => import('./pages/Explore'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 
 const AppContent = () => {
   return (
@@ -37,6 +42,18 @@ const AppContent = () => {
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/explore" element={<Explore />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminLayout />
+                </AdminRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

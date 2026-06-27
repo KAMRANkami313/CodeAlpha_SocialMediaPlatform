@@ -336,3 +336,13 @@
   width: auto;
   padding: var(--space-2) var(--space-5);
 }
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="text"]::-ms-reveal,
+input[type="text"]::-ms-clear {
+  display: none;
+}

@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   LogIn,
-  UserPlus
+  UserPlus,
+  ShieldCheck
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -64,6 +65,12 @@ const Navbar = () => {
               <User size={18} />
               <span className="navbar-link-label">Profile</span>
             </Link>
+            {(user.role === 'admin' || user.role === 'super_admin') && (
+              <Link to="/admin" className="navbar-link-with-icon admin-link" aria-label="Admin panel" title="Admin Panel">
+                <ShieldCheck size={18} />
+                <span className="navbar-link-label">Admin</span>
+              </Link>
+            )}
             <button onClick={toggleTheme} className="navbar-icon-btn" aria-label="Toggle theme">
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
@@ -123,6 +130,12 @@ const Navbar = () => {
                 <User size={18} />
                 <span>Profile</span>
               </Link>
+              {(user.role === 'admin' || user.role === 'super_admin') && (
+                <Link to="/admin" className="navbar-mobile-link admin-link">
+                  <ShieldCheck size={18} />
+                  <span>Admin Panel</span>
+                </Link>
+              )}
               <button onClick={toggleTheme} className="navbar-mobile-link">
                 {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
                 <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>

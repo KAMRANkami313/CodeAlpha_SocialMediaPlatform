@@ -8,4 +8,5 @@
 @import "./styles/components/messages.css";
 @import "./styles/components/explore.css";
 @import "./styles/components/auth.css";
+@import "./styles/components/admin.css";
 @import "./styles/responsive.css";
