@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -5,16 +6,18 @@ import { ErrorProvider } from './context/ErrorContext';
 import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/navbar/Navbar';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import VerifyEmail from './pages/VerifyEmail';
-import Feed from './pages/Feed';
-import Profile from './pages/Profile';
-import Messages from './pages/Messages';
-import Explore from './pages/Explore';
-import NotFound from './pages/NotFound';
+import RouteLoader from './components/common/RouteLoader';
+
+const Feed = lazy(() => import('./pages/Feed'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Messages = lazy(() => import('./pages/Messages'));
+const Explore = lazy(() => import('./pages/Explore'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const AppContent = () => {
   return (
@@ -23,18 +26,20 @@ const AppContent = () => {
       <Navbar />
       <EmailVerificationBanner />
       <main id="main-content">
-        <Routes>
-          <Route path="/" element={<Feed />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
-          <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<RouteLoader />}>
+          <Routes>
+            <Route path="/" element={<Feed />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
     </Router>
   );
