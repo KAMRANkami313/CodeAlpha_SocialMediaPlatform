@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ACTIVITY_THRESHOLD_MS } from '../../utils/constants';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
+import { UserPlus, Users } from 'lucide-react';
 
 const evaluateActivityStatus = (lastActivityDate) => {
   if (!lastActivityDate) return false;
@@ -12,7 +13,10 @@ const evaluateActivityStatus = (lastActivityDate) => {
 const SuggestionsSidebar = ({ suggestions, onFollow }) => {
   return (
     <div className="sidebar-widget">
-      <div className="sidebar-title">Suggestions for you</div>
+      <div className="sidebar-title">
+        <Users size={14} />
+        Suggestions for you
+      </div>
       {suggestions.map((suggestion) => (
         <div className="suggestion-item" key={suggestion._id}>
           <div className="suggestion-info">
@@ -32,13 +36,15 @@ const SuggestionsSidebar = ({ suggestions, onFollow }) => {
             </Link>
           </div>
           <button className="follow-link" onClick={() => onFollow(suggestion._id)}>
+            <UserPlus size={12} />
             Follow
           </button>
         </div>
       ))}
       {suggestions.length === 0 && (
-        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center', padding: 'var(--space-4) 0' }}>
-          No new suggestions
+        <div className="sidebar-empty">
+          <Users size={24} />
+          <span>No new suggestions</span>
         </div>
       )}
     </div>

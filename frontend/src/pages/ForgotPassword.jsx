@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { passwordResetService } from '../services/passwordResetService';
+import { Mail, Send, AlertCircle, CheckCircle2, Loader2, KeyRound } from 'lucide-react';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -27,27 +28,39 @@ const ForgotPassword = () => {
     <div className="auth-page-wrapper">
       <div className="container">
         <div className="auth-card">
-          <h2>Forgot Password</h2>
-          <p style={{ color: 'var(--secondary-text)', fontSize: 'var(--text-sm)', margin: '0 0 var(--space-6) 0' }}>
+          <div className="auth-card-header">
+            <KeyRound size={28} className="auth-card-icon" />
+            <h2>Forgot Password</h2>
+          </div>
+          <p className="auth-subtitle">
             Enter your email and we'll send you a link to reset your password.
           </p>
-          {error && <p className="auth-error">{error}</p>}
+          {error && (
+            <div className="auth-error">
+              <AlertCircle size={14} />
+              {error}
+            </div>
+          )}
           {message && (
-            <p style={{ color: 'var(--success)', fontSize: 'var(--text-sm)', margin: '0 0 var(--space-4) 0', padding: 'var(--space-2) var(--space-3)', background: 'rgba(16, 185, 129, 0.08)', borderRadius: 'var(--radius-sm)' }}>
+            <div className="auth-success">
+              <CheckCircle2 size={14} />
               {message}
-            </p>
+            </div>
           )}
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
+            <div className="form-group auth-input-group">
+              <Mail size={16} className="auth-input-icon" />
               <input
                 type="email"
                 placeholder="Your email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="auth-input-with-icon"
               />
             </div>
-            <button type="submit" className="btn" disabled={loading}>
+            <button type="submit" className="btn auth-submit-btn" disabled={loading}>
+              {loading ? <Loader2 size={16} className="spin" /> : <Send size={16} />}
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>

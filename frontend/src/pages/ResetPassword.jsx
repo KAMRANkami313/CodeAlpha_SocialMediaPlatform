@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { passwordResetService } from '../services/passwordResetService';
+import { Lock, KeyRound, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
 
 const ResetPassword = () => {
   const { token } = useParams();
@@ -9,6 +10,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,36 +36,61 @@ const ResetPassword = () => {
     <div className="auth-page-wrapper">
       <div className="container">
         <div className="auth-card">
-          <h2>Reset Password</h2>
-          <p style={{ color: 'var(--secondary-text)', fontSize: 'var(--text-sm)', margin: '0 0 var(--space-6) 0' }}>
+          <div className="auth-card-header">
+            <KeyRound size={28} className="auth-card-icon" />
+            <h2>Reset Password</h2>
+          </div>
+          <p className="auth-subtitle">
             Enter your new password below.
           </p>
-          {error && <p className="auth-error">{error}</p>}
+          {error && (
+            <div className="auth-error">
+              <AlertCircle size={14} />
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
+            <div className="form-group auth-input-group">
+              <Lock size={16} className="auth-input-icon" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="New password (min 6 characters)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
+                className="auth-input-with-icon auth-input-with-action"
               />
+              <button
+                type="button"
+                className="auth-input-action"
+                onClick={() => setShowPassword(s => !s)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
             </div>
-            <div className="form-group">
+            <div className="form-group auth-input-group">
+              <Lock size={16} className="auth-input-icon" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                className="auth-input-with-icon"
               />
             </div>
-            <button type="submit" className="btn" disabled={loading}>
+            <button type="submit" className="btn auth-submit-btn" disabled={loading}>
+              {loading ? <Loader2 size={16} className="spin" /> : <KeyRound size={16} />}
               {loading ? 'Resetting...' : 'Reset Password'}
             </button>
           </form>
           <p className="auth-switch-text">
-            <Link to="/login">Back to login</Link>
+            <Link to="/login" className="auth-back-link">
+              <ArrowLeft size={13} />
+              Back to login
+            </Link>
           </p>
         </div>
       </div>

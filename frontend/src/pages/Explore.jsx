@@ -5,6 +5,7 @@ import Avatar from '../components/common/Avatar';
 import VerifiedBadge from '../components/common/VerifiedBadge';
 import EmptyState from '../components/common/EmptyState';
 import { ExploreSkeleton } from '../components/common/Skeleton';
+import { Users, TrendingUp, Heart, Hash, UserCircle2, ArrowRight } from 'lucide-react';
 
 const Explore = () => {
   const [exploreData, setExploreData] = useState(null);
@@ -36,9 +37,16 @@ const Explore = () => {
     <div className="container" style={{ maxWidth: '1024px' }}>
       <div className="explore-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 'var(--space-8)', marginBottom: 'var(--space-10)' }}>
         <div>
-          <h3 className="explore-section-title">Discover People</h3>
+          <h3 className="explore-section-title">
+            <Users size={18} />
+            Discover People
+          </h3>
           {discoverUsers.length === 0 ? (
-            <EmptyState icon="👥" title="No people to discover" message="Check back later for new users to connect with." />
+            <EmptyState
+              icon={<UserCircle2 size={48} />}
+              title="No people to discover"
+              message="Check back later for new users to connect with."
+            />
           ) : (
             <div className="explore-grid">
               {discoverUsers.map((u) => (
@@ -53,8 +61,9 @@ const Explore = () => {
                     <VerifiedBadge show={u.isVerified} />
                   </Link>
                   <p className="explore-user-bio">{u.bio || 'No bio yet'}</p>
-                  <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)', fontSize: 'var(--text-xs)' }} onClick={() => navigate(`/profile/${u._id}`)}>
+                  <button className="btn explore-view-btn" onClick={() => navigate(`/profile/${u._id}`)}>
                     View Profile
+                    <ArrowRight size={13} />
                   </button>
                 </div>
               ))}
@@ -63,7 +72,10 @@ const Explore = () => {
         </div>
 
         <div>
-          <h3 className="explore-section-title">Trending Tags</h3>
+          <h3 className="explore-section-title">
+            <Hash size={18} />
+            Trending Tags
+          </h3>
           <div className="auth-card" style={{ padding: 'var(--space-5)', textAlign: 'left' }}>
             {trendingTags.map((item) => (
               <div
@@ -76,17 +88,25 @@ const Explore = () => {
               </div>
             ))}
             {trendingTags.length === 0 && (
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center', padding: 'var(--space-4) 0' }}>
-                No trending tags yet
+              <div className="explore-tags-empty">
+                <Hash size={24} />
+                <span>No trending tags yet</span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <h3 className="explore-section-title">Trending Posts</h3>
+      <h3 className="explore-section-title">
+        <TrendingUp size={18} />
+        Trending Posts
+      </h3>
       {trendingPosts.length === 0 ? (
-        <EmptyState icon="📊" title="No trending posts yet" message="Start posting and liking to see trending content here." />
+        <EmptyState
+          icon={<TrendingUp size={48} />}
+          title="No trending posts yet"
+          message="Start posting and liking to see trending content here."
+        />
       ) : (
         <div className="explore-grid">
           {trendingPosts.map((post) => (
@@ -110,8 +130,9 @@ const Explore = () => {
                   {post.caption}
                 </div>
               )}
-              <div style={{ padding: 'var(--space-3) var(--space-4)', fontSize: 'var(--text-sm)', borderTop: '1px solid var(--border-light)', color: 'var(--secondary-text)' }}>
-                ❤️ {post.likes.length} likes
+              <div className="explore-post-likes">
+                <Heart size={13} fill="currentColor" className="explore-post-like-icon" />
+                {post.likes.length} likes
               </div>
             </div>
           ))}

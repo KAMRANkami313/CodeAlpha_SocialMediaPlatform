@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
+import { MailCheck, CheckCircle2, AlertCircle, Loader2, ArrowLeft, MailWarning } from 'lucide-react';
 
 const VerifyEmail = () => {
   const { token } = useParams();
@@ -29,30 +30,46 @@ const VerifyEmail = () => {
     <div className="auth-page-wrapper">
       <div className="container">
         <div className="auth-card">
-          <h2>Email Verification</h2>
+          <div className="auth-card-header">
+            {verified ? (
+              <MailCheck size={28} className="auth-card-icon success" />
+            ) : (
+              <MailWarning size={28} className="auth-card-icon" />
+            )}
+            <h2>Email Verification</h2>
+          </div>
           {verified ? (
-            <div style={{ textAlign: 'center', padding: 'var(--space-6) 0' }}>
-              <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)' }}>✓</div>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary-text)' }}>
+            <div className="verify-success">
+              <CheckCircle2 size={56} className="verify-success-icon" />
+              <p className="verify-success-text">
                 Your email has been verified successfully! Redirecting to login...
               </p>
             </div>
           ) : (
             <>
-              <p style={{ color: 'var(--secondary-text)', fontSize: 'var(--text-sm)', margin: '0 0 var(--space-6) 0' }}>
+              <p className="auth-subtitle">
                 Click the button below to verify your email address.
               </p>
-              {error && <p className="auth-error">{error}</p>}
+              {error && (
+                <div className="auth-error">
+                  <AlertCircle size={14} />
+                  {error}
+                </div>
+              )}
               <button
                 type="button"
-                className="btn"
+                className="btn auth-submit-btn"
                 onClick={handleVerify}
                 disabled={verifying}
               >
+                {verifying ? <Loader2 size={16} className="spin" /> : <MailCheck size={16} />}
                 {verifying ? 'Verifying...' : 'Verify My Email'}
               </button>
-              <p className="auth-switch-text" style={{ marginTop: 'var(--space-4)' }}>
-                <Link to="/login">Back to login</Link>
+              <p className="auth-switch-text">
+                <Link to="/login" className="auth-back-link">
+                  <ArrowLeft size={13} />
+                  Back to login
+                </Link>
               </p>
             </>
           )}

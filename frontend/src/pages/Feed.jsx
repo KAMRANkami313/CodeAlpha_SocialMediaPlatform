@@ -14,6 +14,7 @@ import SuggestionsSidebar from '../components/feed/SuggestionsSidebar';
 import LikersModal from '../components/common/LikersModal';
 import EmptyState from '../components/common/EmptyState';
 import { PostSkeleton } from '../components/common/Skeleton';
+import { FileText, SearchX, Hash, X } from 'lucide-react';
 
 const Feed = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -150,8 +151,14 @@ const Feed = () => {
 
       {(currentTag || targetPostId) && (
         <div className="feed-tag-header">
-          <h2>{targetPostId ? 'Showing shared post' : `Showing posts for #${currentTag}`}</h2>
-          <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)' }} onClick={() => setSearchParams({})}>
+          <h2>
+            {targetPostId
+              ? <><SearchX size={18} /> Showing shared post</>
+              : <><Hash size={18} /> Showing posts for #{currentTag}</>
+            }
+          </h2>
+          <button className="btn feed-clear-btn" onClick={() => setSearchParams({})}>
+            <X size={14} />
             Show All Feed
           </button>
         </div>
@@ -186,12 +193,12 @@ const Feed = () => {
 
           {posts.length === 0 && !loadingPosts && (
             <EmptyState
-              icon={targetPostId ? '🔍' : '📝'}
+              icon={targetPostId ? <SearchX size={48} /> : <FileText size={48} />}
               title={targetPostId ? 'Post not found' : 'No posts yet'}
               message={targetPostId ? 'This post may have been deleted.' : 'Be the first to share something with your community!'}
             />
           )}
-          
+                    
           {hasMore && (
             <div ref={sentinelRef} className="infinite-scroll-sentinel">
               {loadingPosts && <div className="loading-spinner"></div>}

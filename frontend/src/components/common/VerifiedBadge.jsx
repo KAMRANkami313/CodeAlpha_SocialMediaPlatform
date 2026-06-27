@@ -1,15 +1,23 @@
+import { BadgeCheck } from 'lucide-react';
+
 const VerifiedBadge = ({ show = true, size = 'default' }) => {
   if (!show) return null;
 
-  const sizeStyle =
-    size === 'small'
-      ? { width: '9px', height: '9px', fontSize: '6px' }
-      : {};
+  const iconSize = size === 'small' ? 11 : 14;
+  const marginLeft = size === 'small' ? '2px' : '4px';
 
   return (
-    <span className="verified-badge" style={sizeStyle}>
-      ✓
-    </span>
+    <BadgeCheck
+      size={iconSize}
+      className="verified-badge"
+      style={{
+        marginLeft,
+        color: 'var(--accent)',
+        fill: 'var(--accent-light)',
+        flexShrink: 0
+      }}
+      aria-label="Verified"
+    />
   );
 };
 
