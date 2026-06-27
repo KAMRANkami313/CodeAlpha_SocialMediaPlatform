@@ -7,6 +7,7 @@ const LikersModal = ({ likers = [], onClose }) => {
       users={likers}
       onClose={onClose}
       emptyMessage="No likes yet"
+      icon="heart"
     />
   );
 };

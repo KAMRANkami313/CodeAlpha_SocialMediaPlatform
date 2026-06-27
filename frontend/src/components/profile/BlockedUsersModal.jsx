@@ -3,6 +3,7 @@ import Modal from '../common/Modal';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
 import { blockService } from '../../services/blockService';
+import { ShieldBan, Unlock, Loader2, Inbox } from 'lucide-react';
 
 const BlockedUsersModal = ({ onClose, onUnblocked }) => {
   const [blockedUsers, setBlockedUsers] = useState([]);
@@ -35,13 +36,15 @@ const BlockedUsersModal = ({ onClose, onUnblocked }) => {
   return (
     <Modal title="Blocked Users" onClose={onClose}>
       {loading && (
-        <div style={{ textAlign: 'center', padding: 'var(--space-6) 0', color: 'var(--secondary-text)', fontSize: 'var(--text-sm)' }}>
-          Loading...
+        <div className="blocked-loading">
+          <Loader2 size={20} className="spin" />
+          <span>Loading...</span>
         </div>
       )}
       {!loading && blockedUsers.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 'var(--space-6) 0', color: 'var(--secondary-text)', fontSize: 'var(--text-sm)' }}>
-          You haven't blocked anyone.
+        <div className="blocked-empty">
+          <ShieldBan size={32} />
+          <span>You haven't blocked anyone.</span>
         </div>
       )}
       {!loading && blockedUsers.map((blockedUser) => (
@@ -59,10 +62,10 @@ const BlockedUsersModal = ({ onClose, onUnblocked }) => {
             </span>
           </div>
           <button
-            className="btn"
-            style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }}
+            className="btn blocked-unblock-btn"
             onClick={() => handleUnblock(blockedUser._id)}
           >
+            <Unlock size={13} />
             Unblock
           </button>
         </div>

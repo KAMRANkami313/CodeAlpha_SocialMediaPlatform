@@ -5,6 +5,17 @@ import ProfileEditForm from './ProfileEditForm';
 import SettingsModal from './SettingsModal';
 import BlockedUsersModal from './BlockedUsersModal';
 import { blockService } from '../../services/blockService';
+import {
+  Pencil,
+  Settings,
+  ShieldBan,
+  UserPlus,
+  UserMinus,
+  Mail,
+  Unlock,
+  Ban,
+  Eye
+} from 'lucide-react';
 
 const ProfileHeader = ({
   profile,
@@ -69,20 +80,24 @@ const ProfileHeader = ({
             <div className="profile-action-buttons">
               {!blockStatus.isBlocked && (
                 <>
-                  <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)' }} onClick={onFollowUnfollow}>
+                  <button className="btn profile-action-btn follow" onClick={onFollowUnfollow}>
+                    {isFollowing ? <UserMinus size={15} /> : <UserPlus size={15} />}
                     {isFollowing ? 'Unfollow' : 'Follow'}
                   </button>
-                  <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onMessage}>
+                  <button className="btn profile-action-btn secondary" onClick={onMessage}>
+                    <Mail size={15} />
                     Message
                   </button>
                 </>
               )}
               {blockStatus.blockedByMe ? (
-                <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={handleUnblock}>
+                <button className="btn profile-action-btn secondary" onClick={handleUnblock}>
+                  <Unlock size={15} />
                   Unblock
                 </button>
               ) : (
-                <button className="btn settings-danger-btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-5)' }} onClick={handleBlock}>
+                <button className="btn settings-danger-btn profile-action-btn" onClick={handleBlock}>
+                  <Ban size={15} />
                   Block
                 </button>
               )}
@@ -104,7 +119,8 @@ const ProfileHeader = ({
             <strong>{profile.following.length}</strong> following
           </span>
           {isMe && (
-            <span style={{ color: 'var(--secondary-text)' }}>
+            <span style={{ color: 'var(--secondary-text)' }} className="profile-stat-views">
+              <Eye size={13} />
               <strong>{profile.views?.length || 0}</strong> views
             </span>
           )}
@@ -122,9 +138,18 @@ const ProfileHeader = ({
             <p>{profile.bio || 'No bio yet.'}</p>
             {isMe && (
               <div className="profile-action-buttons">
-                <button className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onEdit}>Edit Profile</button>
-                <button className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={() => setShowSettings(true)}>Settings</button>
-                <button className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={() => setShowBlocked(true)}>Blocked Users</button>
+                <button className="btn profile-action-btn secondary" onClick={onEdit}>
+                  <Pencil size={15} />
+                  Edit Profile
+                </button>
+                <button className="btn profile-action-btn secondary" onClick={() => setShowSettings(true)}>
+                  <Settings size={15} />
+                  Settings
+                </button>
+                <button className="btn profile-action-btn secondary" onClick={() => setShowBlocked(true)}>
+                  <ShieldBan size={15} />
+                  Blocked Users
+                </button>
               </div>
             )}
           </div>

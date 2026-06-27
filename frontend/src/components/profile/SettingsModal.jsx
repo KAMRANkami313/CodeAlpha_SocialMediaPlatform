@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Modal from '../common/Modal';
 import { authService } from '../../services/authService';
+import { KeyRound, Trash2, AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 const SettingsModal = ({ onClose, onAccountDeleted }) => {
   const [activeSection, setActiveSection] = useState('password');
@@ -48,12 +49,14 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
           className={`settings-tab ${activeSection === 'password' ? 'active' : ''}`}
           onClick={() => setActiveSection('password')}
         >
+          <KeyRound size={14} />
           Change Password
         </button>
         <button
           className={`settings-tab ${activeSection === 'delete' ? 'active' : ''}`}
           onClick={() => setActiveSection('delete')}
         >
+          <Trash2 size={14} />
           Delete Account
         </button>
       </div>
@@ -61,7 +64,12 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
       {activeSection === 'password' && (
         <form onSubmit={handleChangePassword} className="settings-form">
           {passwordError && <p className="auth-error">{passwordError}</p>}
-          {passwordMessage && <p className="settings-success">{passwordMessage}</p>}
+          {passwordMessage && (
+            <p className="settings-success">
+              <CheckCircle2 size={14} />
+              {passwordMessage}
+            </p>
+          )}
           <div className="form-group">
             <input
               type="password"
@@ -95,20 +103,27 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
 
       {activeSection === 'delete' && (
         <div className="settings-danger-zone">
-          <p className="settings-danger-text">
-            Permanently delete your account and all associated data including posts, comments, messages, and stories. This action cannot be undone.
-          </p>
+          <div className="settings-danger-intro">
+            <AlertTriangle size={32} className="settings-danger-icon" />
+            <p className="settings-danger-text">
+              Permanently delete your account and all associated data including posts, comments, messages, and stories. This action cannot be undone.
+            </p>
+          </div>
           {deleteError && <p className="auth-error">{deleteError}</p>}
           {!deleteConfirm ? (
             <button
               className="btn settings-danger-btn"
               onClick={() => setDeleteConfirm(true)}
             >
+              <Trash2 size={14} />
               Delete My Account
             </button>
           ) : (
             <div className="settings-confirm-delete">
-              <p className="settings-confirm-text">Are you absolutely sure? This cannot be undone.</p>
+              <p className="settings-confirm-text">
+                <ShieldCheck size={14} />
+                Are you absolutely sure? This cannot be undone.
+              </p>
               <div className="settings-confirm-buttons">
                 <button className="btn settings-danger-btn" onClick={handleDeleteAccount}>
                   Yes, delete everything

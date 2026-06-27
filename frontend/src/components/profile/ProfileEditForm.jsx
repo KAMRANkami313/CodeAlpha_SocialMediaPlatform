@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { userService } from '../../services/userService';
 import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
+import { Camera, Loader2, AlertCircle } from 'lucide-react';
 
 const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpdated }) => {
   const [usernameInput, setUsernameInput] = useState(initialProfile.username);
@@ -62,11 +63,12 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
   return (
     <form onSubmit={handleUpdateProfile}>
       {error && (
-        <p style={{ color: 'var(--danger)', fontSize: 'var(--text-sm)', margin: '0 0 var(--space-4) 0', padding: 'var(--space-2) var(--space-3)', background: 'rgba(239, 68, 68, 0.08)', borderRadius: 'var(--radius-sm)' }}>
+        <div className="profile-edit-error">
+          <AlertCircle size={14} />
           {error}
-        </p>
+        </div>
       )}
-      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+      <div className="form-group profile-edit-avatar-row">
         <Avatar
           src={profilePicInput}
           alt="Profile Preview"
@@ -83,11 +85,11 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
           />
           <button
             type="button"
-            className="btn"
-            style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }}
+            className="btn profile-edit-upload-btn"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
+            {uploading ? <Loader2 size={14} className="spin" /> : <Camera size={14} />}
             {uploading ? 'Uploading...' : 'Change Photo'}
           </button>
         </div>
@@ -117,18 +119,18 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
           onChange={(e) => setBioInput(e.target.value)}
         />
       </div>
-      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+      <div className="form-group profile-edit-verified">
         <input
           type="checkbox"
           checked={isVerifiedInput}
           onChange={(e) => setIsVerifiedInput(e.target.checked)}
           style={{ width: 'auto', accentColor: 'var(--accent)' }}
         />
-        <label style={{ fontSize: 'var(--text-sm)' }}>Request Verification Checkmark Badge</label>
+        <label>Request Verification Checkmark Badge</label>
       </div>
-      <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-        <button type="submit" className="btn" style={{ width: 'auto' }} disabled={uploading}>Save Changes</button>
-        <button type="button" className="btn" style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={onCancel}>Cancel</button>
+      <div className="profile-edit-actions">
+        <button type="submit" className="btn profile-edit-save" disabled={uploading}>Save Changes</button>
+        <button type="button" className="btn profile-edit-cancel" onClick={onCancel}>Cancel</button>
       </div>
     </form>
   );

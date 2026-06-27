@@ -4,6 +4,7 @@ import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
 import { messageService } from '../../services/messageService';
 import { userService } from '../../services/userService';
+import { Search, Send, Loader2, Inbox, Image as ImageIcon } from 'lucide-react';
 
 const SharePostModal = ({ post, onClose, onSelectUser }) => {
   const [users, setUsers] = useState([]);
@@ -61,26 +62,36 @@ const SharePostModal = ({ post, onClose, onSelectUser }) => {
           <div className="share-post-preview">
             <img src={post.image} alt="Post preview" />
             <div className="share-post-preview-meta">
-              <span className="share-post-preview-label">Sharing post by</span>
+              <span className="share-post-preview-label">
+                <ImageIcon size={11} />
+                Sharing post by
+              </span>
               <span className="share-post-preview-author">@{post.user?.username}</span>
             </div>
           </div>
         )}
-        <input
-          type="text"
-          className="share-post-search"
-          placeholder="Search people…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search people to share with"
-        />
+        <div className="share-post-search-wrapper">
+          <Search size={14} className="share-post-search-icon" />
+          <input
+            type="text"
+            className="share-post-search"
+            placeholder="Search people…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search people to share with"
+          />
+        </div>
         <div className="share-post-list">
           {loading && (
-            <div className="share-post-empty">Loading people…</div>
+            <div className="share-post-empty">
+              <Loader2 size={20} className="spin" />
+              <span>Loading people…</span>
+            </div>
           )}
           {!loading && filtered.length === 0 && (
             <div className="share-post-empty">
-              No one to share with yet. Start a conversation first!
+              <Inbox size={28} />
+              <span>No one to share with yet. Start a conversation first!</span>
             </div>
           )}
           {!loading && filtered.map((u) => (
@@ -100,7 +111,8 @@ const SharePostModal = ({ post, onClose, onSelectUser }) => {
                 {u.username}
                 <VerifiedBadge show={u.isVerified} />
               </span>
-              <span className="share-post-send">
+              <span className={`share-post-send ${sendingId === u._id ? 'sending' : ''}`}>
+                {sendingId === u._id ? <Loader2 size={12} className="spin" /> : <Send size={12} />}
                 {sendingId === u._id ? 'Sending…' : 'Send'}
               </span>
             </button>

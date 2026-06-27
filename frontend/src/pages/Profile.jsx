@@ -12,6 +12,7 @@ import EmptyState from '../components/common/EmptyState';
 import { ProfileSkeleton } from '../components/common/Skeleton';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import CreateHighlightModal from '../components/profile/CreateHighlightModal';
+import { FileText, Bookmark, Archive as ArchiveIcon, Eye, ArchiveRestore, Trash2 } from 'lucide-react';
 
 const Profile = () => {
   const { id } = useParams();
@@ -229,7 +230,11 @@ const Profile = () => {
       <div className="profile-posts-grid">
         {displayedPosts.length === 0 && (
           <EmptyState
-            icon={activeTab === 'saved' ? '🔖' : activeTab === 'archived' ? '🗄️' : '📝'}
+            icon={
+              activeTab === 'saved' ? <Bookmark size={48} />
+              : activeTab === 'archived' ? <ArchiveIcon size={48} />
+              : <FileText size={48} />
+            }
             title={
               activeTab === 'saved' ? 'No saved posts'
               : activeTab === 'archived' ? 'No archived posts'
@@ -268,10 +273,9 @@ const Profile = () => {
               <p>{post.caption}</p>
             </div>
             {isMe && activeTab === 'archived' && (
-              <div style={{ padding: '0 var(--space-4) var(--space-3)', display: 'flex', gap: 'var(--space-2)' }}>
+              <div className="archived-post-actions">
                 <button
-                  className="btn"
-                  style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)' }}
+                  className="btn archived-restore-btn"
                   onClick={async () => {
                     try {
                       await postService.unarchivePost(post._id);
@@ -279,11 +283,11 @@ const Profile = () => {
                     } catch (err) { console.error(err); }
                   }}
                 >
+                  <ArchiveRestore size={14} />
                   Restore
                 </button>
                 <button
-                  className="btn settings-danger-btn"
-                  style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)' }}
+                  className="btn settings-danger-btn archived-delete-btn"
                   onClick={async () => {
                     if (!window.confirm('Permanently delete this post?')) return;
                     try {
@@ -292,11 +296,12 @@ const Profile = () => {
                     } catch (err) { console.error(err); }
                   }}
                 >
+                  <Trash2 size={14} />
                   Delete
                 </button>
               </div>
             )}
-          </div>
+     </div>
         ))}
       </div>
 
