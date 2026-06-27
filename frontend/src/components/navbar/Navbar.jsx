@@ -114,6 +114,11 @@ const Navbar = () => {
                 <span>Messages</span>
                 {unreadMessages > 0 && <span className="notification-badge">{unreadMessages}</span>}
               </Link>
+              <NotificationDropdown
+                notifications={notifications}
+                fetchNotifications={fetchNotifications}
+                mobile
+              />
               <Link to={`/profile/${user.id}`} className="navbar-mobile-link">
                 <User size={18} />
                 <span>Profile</span>

@@ -9,6 +9,20 @@ import PostViewTracker from './PostViewTracker';
 import CommentSection from './CommentSection';
 import ReportModal from './ReportModal';
 import SharePostModal from './SharePostModal';
+import {
+  Heart,
+  MessageCircle,
+  Link2,
+  Send,
+  Bookmark,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Archive,
+  ArchiveRestore,
+  Flag
+} from 'lucide-react';
 
 const evaluateActivityStatus = (lastActivityDate) => {
   if (!lastActivityDate) return false;
@@ -33,6 +47,7 @@ const PostCard = ({
   const [showMenu, setShowMenu] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [copied, setCopied] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -110,6 +125,12 @@ const PostCard = ({
     }
   };
 
+  const handleShareLink = (postId) => {
+    onShare(postId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleArchiveToggle = async (postId) => {
     setShowMenu(false);
     try {
@@ -149,6 +170,7 @@ const PostCard = ({
 
   const isLiked = post.likes.some(l => l._id === user?.id);
   const isOwnPost = user && user.id === post.user._id;
+  const isSaved = user?.savedPosts?.includes(post._id);
 
   return (
     <div className={`post-card ${post.isArchived ? 'post-card-archived' : ''}`}>
@@ -174,20 +196,21 @@ const PostCard = ({
           )}
         </div>
         {isOwnPost ? (
-          <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
-            <button className="delete-btn" style={{ color: 'var(--accent)' }} onClick={() => handleStartEdit(post)}>
-              Edit
+          <div className="post-header-actions">
+            <button className="post-action-btn edit" onClick={() => handleStartEdit(post)} aria-label="Edit post" title="Edit">
+              <Pencil size={16} />
             </button>
-            <button className="delete-btn" onClick={() => handleDeletePost(post._id)}>
-              Delete
+            <button className="post-action-btn delete" onClick={() => handleDeletePost(post._id)} aria-label="Delete post" title="Delete">
+              <Trash2 size={16} />
             </button>
             <div className="post-menu-container" ref={menuRef}>
               <button
-                className="like-btn post-menu-trigger"
+                className="post-action-btn"
                 onClick={() => setShowMenu(!showMenu)}
                 aria-label="Post options"
+                aria-expanded={showMenu}
               >
-                ⋯
+                <MoreHorizontal size={18} />
               </button>
               {showMenu && (
                 <div className="post-menu-dropdown">
@@ -195,6 +218,7 @@ const PostCard = ({
                     className="post-menu-item"
                     onClick={() => handleArchiveToggle(post._id)}
                   >
+                    {post.isArchived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
                     {post.isArchived ? 'Unarchive Post' : 'Archive Post'}
                   </button>
                 </div>
@@ -205,11 +229,12 @@ const PostCard = ({
           user && (
             <div className="post-menu-container" ref={menuRef}>
               <button
-                className="like-btn post-menu-trigger"
+                className="post-action-btn"
                 onClick={() => setShowMenu(!showMenu)}
                 aria-label="Post options"
+                aria-expanded={showMenu}
               >
-                ⋯
+                <MoreHorizontal size={18} />
               </button>
               {showMenu && (
                 <div className="post-menu-dropdown">
@@ -220,6 +245,7 @@ const PostCard = ({
                       setShowReport(true);
                     }}
                   >
+                    <Flag size={15} />
                     Report Post
                   </button>
                 </div>
@@ -230,45 +256,50 @@ const PostCard = ({
       </div>
       {post.image && <img src={post.image} alt="Post content" className="post-image" />}
       <div className="post-actions" style={{ justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-          <button className={`like-btn ${isLiked ? 'liked' : ''}`} onClick={() => handleLike(post._id)}>
-            {isLiked ? '❤️' : '🤍'}
+        <div className="post-action-group">
+          <button className={`post-action-btn ${isLiked ? 'liked' : ''}`} onClick={() => handleLike(post._id)} aria-label={isLiked ? 'Unlike' : 'Like'}>
+            <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
           </button>
           <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
             {post.likes.length} likes
           </span>
-          <button className="like-btn" onClick={() => handleToggleComments(post._id)}>
-            💬
+          <button className="post-action-btn" onClick={() => handleToggleComments(post._id)} aria-label="Comments">
+            <MessageCircle size={20} />
           </button>
           <span className="post-action-info">
             {post.comments.length} comments
           </span>
-          <button className="like-btn" onClick={() => onShare(post._id)} aria-label="Copy link">
-            🔗
+          <button className={`post-action-btn ${copied ? 'copied' : ''}`} onClick={() => handleShareLink(post._id)} aria-label="Copy link" title="Copy link">
+            <Link2 size={18} />
           </button>
           {onShareToDM && (
             <button
-              className="like-btn"
+              className="post-action-btn"
               onClick={() => setShowShare(true)}
               aria-label="Share via DM"
               title="Share via DM"
             >
-              ✈️
+              <Send size={18} />
             </button>
           )}
-          <span className="post-action-info">
-            👁️ {post.views?.length || 0} views
+          <span className="post-action-info views">
+            <Eye size={14} />
+            {post.views?.length || 0}
           </span>
         </div>
         {user && (
           <button
-            className="like-btn"
+            className={`post-action-btn ${isSaved ? 'saved' : ''}`}
             onClick={() => handleSave(post._id)}
+            aria-label={isSaved ? 'Remove from saved' : 'Save post'}
           >
-            {user.savedPosts?.includes(post._id) ? '🔖' : '📁'}
+            <Bookmark size={20} fill={isSaved ? 'currentColor' : 'none'} />
           </button>
         )}
       </div>
+      {copied && (
+        <div className="post-copied-toast">Link copied!</div>
+      )}
       <div className="post-content">
         {editingPostId === post._id ? (
           <div>
@@ -279,11 +310,11 @@ const PostCard = ({
                 rows="2"
               />
             </div>
-            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)' }} onClick={() => handleSaveEdit(post._id)}>
+            <div className="post-edit-actions">
+              <button className="btn post-edit-save" onClick={() => handleSaveEdit(post._id)}>
                 Save
               </button>
-              <button className="btn" style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--text-xs)', background: 'var(--bg-subtle)', color: 'var(--text-color)' }} onClick={() => setEditingPostId(null)}>
+              <button className="btn post-edit-cancel" onClick={() => setEditingPostId(null)}>
                 Cancel
               </button>
             </div>

@@ -4,6 +4,7 @@ import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
 import Modal from '../common/Modal';
+import { Plus, ImagePlus, Loader2 } from 'lucide-react';
 
 const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
   const [storyCreateModal, setStoryCreateModal] = useState(false);
@@ -63,7 +64,9 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
               alt="My Avatar"
               className="story-circle"
             />
-            <span className="story-add-badge">+</span>
+            <span className="story-add-badge">
+              <Plus size={14} strokeWidth={3} />
+            </span>
           </div>
           <span className="story-username">Add Story</span>
         </div>
@@ -89,7 +92,12 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
             {imagePreview && (
               <div className="image-preview-container" style={{ marginBottom: 'var(--space-4)' }}>
                 <img src={imagePreview} alt="Preview" className="image-preview" style={{ maxHeight: '200px' }} />
-                {uploading && <div className="image-preview-uploading">Uploading...</div>}
+                {uploading && (
+                  <div className="image-preview-uploading">
+                    <Loader2 size={20} className="spin" />
+                    <span>Uploading...</span>
+                  </div>
+                )}
               </div>
             )}
             <div className="form-group">
@@ -102,12 +110,12 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
               />
               <button
                 type="button"
-                className="btn"
-                style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)', marginBottom: 'var(--space-3)' }}
+                className="btn upload-image-btn"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
               >
-                {uploading ? 'Uploading...' : '📷 Upload Story Image'}
+                {uploading ? <Loader2 size={16} className="spin" /> : <ImagePlus size={16} />}
+                {uploading ? 'Uploading...' : 'Upload Story Image'}
               </button>
             </div>
             <div className="form-group">

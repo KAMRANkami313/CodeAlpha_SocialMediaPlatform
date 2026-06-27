@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Modal from '../common/Modal';
 import { reportService } from '../../services/reportService';
+import { CheckCircle2, Flag } from 'lucide-react';
 
 const REPORT_REASONS = [
   { value: 'spam', label: 'Spam or misleading' },
@@ -42,9 +43,9 @@ const ReportModal = ({ postId, onClose }) => {
   if (success) {
     return (
       <Modal title="Report Submitted" onClose={onClose}>
-        <div style={{ textAlign: 'center', padding: 'var(--space-6) 0' }}>
-          <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)' }}>✓</div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary-text)' }}>
+        <div className="report-success">
+          <CheckCircle2 size={48} className="report-success-icon" />
+          <p className="report-success-text">
             Thank you for your report. Our team will review it shortly.
           </p>
         </div>
@@ -56,7 +57,8 @@ const ReportModal = ({ postId, onClose }) => {
     <Modal title="Report Post" onClose={onClose}>
       <form onSubmit={handleSubmit} className="settings-form">
         {error && <p className="auth-error">{error}</p>}
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', margin: '0 0 var(--space-4) 0' }}>
+        <p className="report-intro">
+          <Flag size={14} />
           Why are you reporting this post?
         </p>
         <div className="report-reasons">

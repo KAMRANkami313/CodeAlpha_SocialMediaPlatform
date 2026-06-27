@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { STORY_PROGRESS } from '../../utils/constants';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
+import { X } from 'lucide-react';
 
 const StoryViewer = ({ activeStoryGroup, onClose }) => {
   const [storyProgress, setStoryProgress] = useState(0);
@@ -45,7 +46,7 @@ const StoryViewer = ({ activeStoryGroup, onClose }) => {
           <div className="story-progress-bar-fg" style={{ width: `${storyProgress}%` }}></div>
         </div>
         <button className="story-close-btn" onClick={onClose} aria-label="Close story">
-          ×
+          <X size={22} />
         </button>
         <div className="story-header-info">
           <Avatar

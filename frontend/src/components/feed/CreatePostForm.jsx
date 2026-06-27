@@ -3,6 +3,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { postService } from '../../services/postService';
 import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
+import { ImagePlus, X, Loader2 } from 'lucide-react';
 
 const CreatePostForm = ({ onPostCreated }) => {
   const { user } = useContext(AuthContext);
@@ -77,8 +78,15 @@ const CreatePostForm = ({ onPostCreated }) => {
         {imagePreview && (
           <div className="image-preview-container">
             <img src={imagePreview} alt="Preview" className="image-preview" />
-            <button type="button" className="image-preview-remove" onClick={handleRemoveImage}>×</button>
-            {uploading && <div className="image-preview-uploading">Uploading...</div>}
+            <button type="button" className="image-preview-remove" onClick={handleRemoveImage} aria-label="Remove image">
+              <X size={16} />
+            </button>
+            {uploading && (
+              <div className="image-preview-uploading">
+                <Loader2 size={20} className="spin" />
+                <span>Uploading...</span>
+              </div>
+            )}
           </div>
         )}
         <div className="form-group">
@@ -91,12 +99,12 @@ const CreatePostForm = ({ onPostCreated }) => {
           />
           <button
             type="button"
-            className="btn"
-            style={{ width: 'auto', background: 'var(--bg-subtle)', color: 'var(--text-color)', marginBottom: 'var(--space-3)' }}
+            className="btn upload-image-btn"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
-            {uploading ? 'Uploading...' : '📷 Upload Image'}
+            {uploading ? <Loader2 size={16} className="spin" /> : <ImagePlus size={16} />}
+            {uploading ? 'Uploading...' : 'Upload Image'}
           </button>
         </div>
         <button type="submit" className="btn" disabled={uploading}>Post</button>

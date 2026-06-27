@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { postService } from '../../services/postService';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
+import { Heart, X, Send, CornerDownRight } from 'lucide-react';
 
 const CommentItem = ({ comment, post, user, onCommentsUpdated, depth = 0 }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -85,6 +86,8 @@ const CommentItem = ({ comment, post, user, onCommentsUpdated, depth = 0 }) => {
     }
   };
 
+  const isCommentLiked = comment.likes?.includes(user?.id);
+
   return (
     <div className="comment-thread">
       <div className="comment" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -100,17 +103,17 @@ const CommentItem = ({ comment, post, user, onCommentsUpdated, depth = 0 }) => {
               <VerifiedBadge show={comment.user.isVerified} />
             </div>
             {editingCommentId === comment._id ? (
-              <div style={{ marginTop: 'var(--space-1)', display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+              <div className="comment-edit-row">
                 <input
                   type="text"
                   className="comment-edit-input"
                   value={editCommentText}
                   onChange={(e) => setEditCommentText(e.target.value)}
                 />
-                <button className="delete-btn" style={{ color: 'var(--accent)', flexShrink: 0 }} onClick={() => handleSaveEditComment(comment._id)}>
+                <button className="comment-action-btn save" onClick={() => handleSaveEditComment(comment._id)} aria-label="Save edit">
                   Save
                 </button>
-                <button className="delete-btn" style={{ flexShrink: 0 }} onClick={() => setEditingCommentId(null)}>
+                <button className="comment-action-btn cancel" onClick={() => setEditingCommentId(null)} aria-label="Cancel edit">
                   Cancel
                 </button>
               </div>
@@ -119,30 +122,35 @@ const CommentItem = ({ comment, post, user, onCommentsUpdated, depth = 0 }) => {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 }}>
-          <button className="delete-btn" style={{ display: 'flex', alignItems: 'center', fontSize: 'var(--text-xs)' }} onClick={() => handleLikeComment(comment._id)}>
-            {comment.likes?.includes(user?.id) ? '❤️' : '🤍'}
-            <span style={{ fontSize: 'var(--text-xs)', marginLeft: '2px' }}>{comment.likes?.length || 0}</span>
+        <div className="comment-action-group">
+          <button
+            className={`comment-action-btn like ${isCommentLiked ? 'liked' : ''}`}
+            onClick={() => handleLikeComment(comment._id)}
+            aria-label={isCommentLiked ? 'Unlike comment' : 'Like comment'}
+          >
+            <Heart size={13} fill={isCommentLiked ? 'currentColor' : 'none'} />
+            {comment.likes?.length > 0 && <span>{comment.likes.length}</span>}
           </button>
           {editingCommentId !== comment._id && user && (
-            <button className="delete-btn" style={{ color: 'var(--accent)' }} onClick={() => handleStartEditComment(comment)}>
+            <button className="comment-action-btn edit" onClick={() => handleStartEditComment(comment)}>
               Edit
             </button>
           )}
           {user && user.id === comment.user._id && editingCommentId !== comment._id && (
-            <button className="delete-btn" style={{ fontSize: 'var(--text-base)' }} onClick={() => handleDeleteComment(comment._id)}>
-              ×
+            <button className="comment-action-btn delete" onClick={() => handleDeleteComment(comment._id)} aria-label="Delete comment">
+              <X size={14} />
             </button>
           )}
         </div>
       </div>
 
       <div className="comment-actions-bar">
-        <button className="delete-btn" style={{ color: 'var(--accent)', fontSize: 'var(--text-xs)' }} onClick={() => setShowReplyForm(!showReplyForm)}>
+        <button className="comment-action-btn reply" onClick={() => setShowReplyForm(!showReplyForm)}>
+          <CornerDownRight size={12} />
           Reply
         </button>
         {depth === 0 && (
-          <button className="delete-btn" style={{ fontSize: 'var(--text-xs)' }} onClick={handleToggleReplies}>
+          <button className="comment-action-btn toggle-replies" onClick={handleToggleReplies}>
             {showReplies ? 'Hide replies' : `View replies${replies.length > 0 ? ` (${replies.length})` : ''}`}
           </button>
         )}
@@ -157,7 +165,9 @@ const CommentItem = ({ comment, post, user, onCommentsUpdated, depth = 0 }) => {
             onChange={(e) => setReplyText(e.target.value)}
             required
           />
-          <button type="submit">Reply</button>
+          <button type="submit" disabled={!replyText.trim()} aria-label="Post reply">
+            <Send size={14} />
+          </button>
         </form>
       )}
 
@@ -174,7 +184,7 @@ const CommentItem = ({ comment, post, user, onCommentsUpdated, depth = 0 }) => {
             />
           ))}
           {replies.length === 0 && (
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--secondary-text)', padding: 'var(--space-2) 0' }}>
+            <div className="comment-no-replies">
               No replies yet
             </div>
           )}
@@ -230,7 +240,9 @@ const CommentSection = ({ post, user, onCommentsUpdated }) => {
             onChange={(e) => handleCommentChange(post._id, e.target.value)}
             required
           />
-          <button type="submit" disabled={!commentInputs[post._id]?.trim()}>Post</button>
+          <button type="submit" disabled={!commentInputs[post._id]?.trim()} aria-label="Post comment">
+            <Send size={16} />
+          </button>
         </form>
       )}
     </>
