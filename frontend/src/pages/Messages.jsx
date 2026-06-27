@@ -13,6 +13,7 @@ const Messages = () => {
   const [conversations, setConversations] = useState([]);
   const [activePartner, setActivePartner] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [shareStatus, setShareStatus] = useState(null);
   const sharedPostSentRef = useRef(false);
 
   const fetchConversations = useCallback(async () => {
@@ -80,13 +81,23 @@ const Messages = () => {
       setMessages(prev => prev.filter(m => m._id !== data.messageId));
     };
 
+    const handleMessageReaction = (data) => {
+      setMessages(prev => prev.map(m =>
+        m._id === data.messageId
+          ? { ...m, reactions: data.reactions }
+          : m
+      ));
+    };
+
     socket.on('receive_message', handleReceiveMessage);
     socket.on('message_deleted', handleMessageDeleted);
+    socket.on('message_reaction', handleMessageReaction);
 
     return () => {
       socket.emit('leave_conversation', activePartner._id);
       socket.off('receive_message', handleReceiveMessage);
       socket.off('message_deleted', handleMessageDeleted);
+      socket.off('message_reaction', handleMessageReaction);
     };
   }, [socket, activePartner, user, fetchConversations]);
 
@@ -103,6 +114,12 @@ const Messages = () => {
     fetchConversations();
   };
 
+  const handleMessageReacted = (updatedMessage) => {
+    setMessages(prev => prev.map(m =>
+      m._id === updatedMessage._id ? updatedMessage : m
+    ));
+  };
+
   useEffect(() => {
     const sharedPostId = location.state?.sharedPostId;
     if (!sharedPostId || !activePartner || sharedPostSentRef.current) return;
@@ -112,12 +129,17 @@ const Messages = () => {
     const text = author
       ? `Check out this post by @${author}: ${link}`
       : `Check out this post: ${link}`;
+    setShareStatus('sending');
     (async () => {
       try {
         const res = await messageService.sendMessage(activePartner._id, text);
         handleMessageSent(res.data);
+        setShareStatus('sent');
+        setTimeout(() => setShareStatus(null), 2500);
       } catch (err) {
         console.error(err);
+        setShareStatus('error');
+        setTimeout(() => setShareStatus(null), 4000);
       } finally {
         window.history.replaceState({}, document.title);
       }
@@ -128,6 +150,13 @@ const Messages = () => {
 
   return (
     <div className="container" style={{ maxWidth: '935px' }}>
+      {shareStatus && (
+        <div className={`share-post-toast share-post-toast--${shareStatus}`}>
+          {shareStatus === 'sending' && 'Sharing post…'}
+          {shareStatus === 'sent' && '✓ Post shared!'}
+          {shareStatus === 'error' && '⚠ Could not share post. Is the backend running?'}
+        </div>
+      )}
       <div className="chat-layout">
         <ConversationList
           conversations={conversations}
@@ -141,6 +170,7 @@ const Messages = () => {
           messages={messages}
           onMessageSent={handleMessageSent}
           onMessageDeleted={handleMessageDeleted}
+          onMessageReacted={handleMessageReacted}
           isPartnerOnline={isPartnerOnline}
         />
       </div>

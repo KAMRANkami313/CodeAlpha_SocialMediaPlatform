@@ -19,7 +19,19 @@ const messageSchema = new mongoose.Schema({
   read: {
     type: Boolean,
     default: false
-  }
+  },
+  reactions: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      emoji: {
+        type: String,
+        default: ''
+      }
+    }
+  ]
 }, {
   timestamps: true
 });

@@ -13,6 +13,9 @@ export const messageService = {
   sendMessage: (receiverId, content) =>
     API.post(`/messages/${receiverId}`, { content }),
 
+  reactToMessage: (messageId, emoji) =>
+    API.post(`/messages/${messageId}/react`, { emoji }),
+
   deleteMessage: (messageId) =>
     API.delete(`/messages/${messageId}`)
 };

@@ -311,3 +311,329 @@
   margin-right: var(--space-2);
   font-weight: 500;
 }
+
+.chat-bubble-row {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  position: relative;
+}
+
+.chat-bubble-row.mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chat-bubble-row.theirs {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.chat-bubble-row .chat-bubble {
+  max-width: 100%;
+  position: relative;
+}
+
+.chat-react-btn {
+  position: absolute;
+  bottom: -2px;
+  right: -28px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--secondary-text);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition:
+    opacity var(--transition-fast),
+    background-color var(--transition-fast);
+  line-height: 1;
+  padding: 0;
+}
+
+.chat-bubble-row.theirs .chat-react-btn {
+  left: -28px;
+  right: auto;
+}
+
+.chat-bubble-row:hover .chat-react-btn {
+  opacity: 1;
+}
+
+.chat-react-btn:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.chat-reaction-picker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 0;
+  display: flex;
+  gap: 2px;
+  padding: 6px 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+  animation: pickerPop var(--transition-spring);
+}
+
+.chat-bubble-row.theirs .chat-reaction-picker {
+  right: auto;
+  left: 0;
+}
+
+@keyframes pickerPop {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.chat-reaction-picker-item {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-full);
+  line-height: 1;
+  transition:
+    transform var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.chat-reaction-picker-item:hover {
+  background: var(--accent-light);
+  transform: scale(1.2);
+}
+
+.chat-bubble-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  max-width: 100%;
+}
+
+.chat-reaction-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-color);
+  animation: pillPop var(--transition-spring);
+}
+
+.chat-reaction-pill.mine {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+
+@keyframes pillPop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.chat-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+.chat-bubble.mine .chat-link {
+  color: #ffffff;
+}
+
+.chat-bubble.theirs .chat-link {
+  color: var(--accent);
+}
+
+.chat-link:hover {
+  opacity: 0.85;
+}
+
+.chat-image {
+  cursor: zoom-in;
+  transition: transform var(--transition-fast);
+}
+
+.chat-image:hover {
+  transform: scale(1.02);
+}
+
+.chat-image-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--space-6);
+  animation: lightboxFadeIn var(--transition-normal);
+  cursor: zoom-out;
+}
+
+@keyframes lightboxFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.chat-image-lightbox-image {
+  max-width: 92vw;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  cursor: default;
+  animation: lightboxZoomIn var(--transition-spring);
+}
+
+@keyframes lightboxZoomIn {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.chat-image-lightbox-close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background-color var(--transition-fast);
+}
+
+.chat-image-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.chat-image-lightbox-actions {
+  position: absolute;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--space-3);
+  background: rgba(255, 255, 255, 0.1);
+  padding: var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.chat-image-lightbox-action-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color var(--transition-fast);
+}
+
+.chat-image-lightbox-action-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.share-post-toast {
+  position: fixed;
+  top: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  z-index: 10000;
+  box-shadow: var(--shadow-lg);
+  animation: toastSlideDown var(--transition-spring);
+}
+
+.share-post-toast--sending {
+  background: var(--bg-elevated);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.share-post-toast--sent {
+  background: var(--success);
+  color: #ffffff;
+}
+
+.share-post-toast--error {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+@keyframes toastSlideDown {
+  from {
+    transform: translate(-50%, -16px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .chat-react-btn {
+    opacity: 1;
+  }
+  .chat-bubble-row.mine,
+  .chat-bubble-row.theirs {
+    max-width: 85%;
+  }
+}

@@ -98,10 +98,52 @@ const getUnreadMessagesCount = asyncHandler(async (req, res) => {
   res.status(200).json({ unreadCount: count });
 });
 
+const reactToMessage = asyncHandler(async (req, res) => {
+  const { emoji } = req.body;
+  const message = await Message.findById(req.params.messageId);
+  if (!message) {
+    return res.status(404).json({ message: 'Message not found' });
+  }
+
+  const senderId = message.sender.toString();
+  const receiverId = message.receiver.toString();
+  if (senderId !== req.user.id && receiverId !== req.user.id) {
+    return res.status(403).json({ message: 'Not authorized to react to this message' });
+  }
+
+  const existingIndex = message.reactions.findIndex(
+    (r) => r.user.toString() === req.user.id
+  );
+
+  if (existingIndex >= 0) {
+    if (message.reactions[existingIndex].emoji === emoji) {
+      message.reactions.splice(existingIndex, 1);
+    } else {
+      message.reactions[existingIndex].emoji = emoji;
+    }
+  } else {
+    message.reactions.push({ user: req.user.id, emoji });
+  }
+
+  await message.save();
+
+  const otherUserId = senderId === req.user.id ? receiverId : senderId;
+  const io = getIo();
+  if (io) {
+    io.to(otherUserId).emit('message_reaction', {
+      messageId: message._id,
+      reactions: message.reactions
+    });
+  }
+
+  res.status(200).json(message);
+});
+
 module.exports = {
   sendMessage,
   getConversation,
   getConversationsList,
   deleteMessage,
-  getUnreadCount: getUnreadMessagesCount
+  getUnreadCount: getUnreadMessagesCount,
+  reactToMessage
 };
