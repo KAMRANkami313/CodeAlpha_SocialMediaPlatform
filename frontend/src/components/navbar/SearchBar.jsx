@@ -4,13 +4,7 @@ import { searchService } from '../../services/searchService';
 import { STORAGE_KEYS, SEARCH_DEBOUNCE_MS, RECENT_SEARCHES_LIMIT } from '../../utils/constants';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
-
-const SearchIcon = () => (
-  <svg className="search-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
+import { Search, X, Clock } from 'lucide-react';
 
 const SearchBar = ({ user }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,7 +107,7 @@ const SearchBar = ({ user }) => {
   return (
     <div className="search-container" ref={searchRef}>
       <div className="search-input-wrapper">
-        <SearchIcon />
+        <Search size={16} className="search-input-icon" />
         <input
           type="text"
           placeholder="Search users, posts, tags..."
@@ -122,6 +116,16 @@ const SearchBar = ({ user }) => {
           onFocus={() => setShowSearchDropdown(true)}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
+        {searchQuery && (
+          <button
+            type="button"
+            className="search-clear-btn"
+            onClick={() => setSearchQuery('')}
+            aria-label="Clear search"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
       {showSearchDropdown && (
         <div className="search-dropdown">
@@ -219,11 +223,14 @@ const SearchBar = ({ user }) => {
             <div>
               {recentSearches.length > 0 ? (
                 <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--border-light)' }}>
-                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--secondary-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent</span>
+                  <div className="search-recent-header">
+                    <span className="search-recent-label">
+                      <Clock size={12} />
+                      Recent
+                    </span>
                     <button
                       onClick={handleClearAllRecents}
-                      style={{ color: 'var(--accent)', fontSize: 'var(--text-xs)', fontWeight: 600, padding: '0' }}
+                      className="search-recent-clear"
                     >
                       Clear All
                     </button>
@@ -248,11 +255,11 @@ const SearchBar = ({ user }) => {
                         </div>
                       </div>
                       <button
-                        className="delete-btn"
-                        style={{ fontSize: 'var(--text-lg)', marginRight: 'var(--space-1)', color: 'var(--secondary-text)' }}
+                        className="search-recent-remove"
                         onClick={(e) => handleRemoveRecent(e, u._id)}
+                        aria-label="Remove from recent"
                       >
-                        ×
+                        <X size={14} />
                       </button>
                     </Link>
                   ))}

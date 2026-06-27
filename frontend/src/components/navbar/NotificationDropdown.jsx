@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { notificationService } from '../../services/notificationService';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
+import { Bell, Heart, MessageCircle, UserPlus, Inbox } from 'lucide-react';
 
 const NotificationDropdown = ({ notifications, fetchNotifications }) => {
   const [showNotifications, setShowNotifications] = useState(false);
@@ -20,14 +21,37 @@ const NotificationDropdown = ({ notifications, fetchNotifications }) => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const getNotificationIcon = (type) => {
+    if (type === 'like') return <Heart size={14} className="notification-type-icon like" />;
+    if (type === 'comment') return <MessageCircle size={14} className="notification-type-icon comment" />;
+    if (type === 'follow') return <UserPlus size={14} className="notification-type-icon follow" />;
+    return null;
+  };
+
+  const getNotificationText = (type) => {
+    if (type === 'like') return 'liked your post';
+    if (type === 'comment') return 'commented on your post';
+    if (type === 'follow') return 'started following you';
+    return '';
+  };
+
   return (
     <>
-      <button onClick={handleToggleNotifications} style={{ position: 'relative' }} aria-label="Notifications">
-        Notifications
+      <button
+        onClick={handleToggleNotifications}
+        className="navbar-icon-btn"
+        style={{ position: 'relative' }}
+        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+      >
+        <Bell size={18} />
         {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
       </button>
       {showNotifications && (
         <div className="notification-dropdown">
+          <div className="notification-dropdown-header">
+            <span>Notifications</span>
+            {unreadCount > 0 && <span className="notification-dropdown-count">{unreadCount} new</span>}
+          </div>
           {notifications.map((n) => (
             <div key={n._id} className={`notification-item ${!n.read ? 'unread' : ''}`}>
               <Avatar
@@ -35,20 +59,20 @@ const NotificationDropdown = ({ notifications, fetchNotifications }) => {
                 alt="Avatar"
                 className="notification-avatar"
               />
-              <div>
+              <div className="notification-item-body">
                 <strong style={{ display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>
                   {n.sender.username}
                   <VerifiedBadge show={n.sender.isVerified} />
                 </strong>{' '}
-                {n.type === 'like' && 'liked your post'}
-                {n.type === 'comment' && 'commented on your post'}
-                {n.type === 'follow' && 'started following you'}
+                {getNotificationText(n.type)}
               </div>
+              {getNotificationIcon(n.type)}
             </div>
           ))}
           {notifications.length === 0 && (
-            <div style={{ padding: 'var(--space-6) var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--secondary-text)', textAlign: 'center' }}>
-              No notifications yet
+            <div className="notification-empty">
+              <Inbox size={32} />
+              <span>No notifications yet</span>
             </div>
           )}
         </div>
