@@ -7,8 +7,8 @@ export const authService = {
   login: (email, password) =>
     API.post('/users/login', { email, password }),
 
-  verifyTwoFactor: (tempToken, code, useBackupCode = false) =>
-    API.post('/auth/verify-2fa', { tempToken, code, useBackupCode }),
+  verifyTwoFactor: (tempToken, code, useBackupCode = false, rememberDevice = false) =>
+    API.post('/auth/verify-2fa', { tempToken, code, useBackupCode, rememberDevice }),
 
   changePassword: (currentPassword, newPassword) =>
     API.put('/users/password', { currentPassword, newPassword }),
@@ -26,5 +26,14 @@ export const authService = {
     API.post('/2fa/verify', { code }),
 
   disableTwoFactor: (password) =>
-    API.post('/2fa/disable', { password })
+    API.post('/2fa/disable', { password }),
+
+  getTrustedDevices: () =>
+    API.get('/2fa/devices'),
+
+  revokeTrustedDevice: (deviceId) =>
+    API.delete(`/2fa/devices/${deviceId}`),
+
+  revokeAllTrustedDevices: () =>
+    API.delete('/2fa/devices')
 };

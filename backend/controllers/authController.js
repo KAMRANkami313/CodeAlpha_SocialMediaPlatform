@@ -1,10 +1,29 @@
 const User = require('../models/User');
+const TrustedDevice = require('../models/TrustedDevice');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { authenticator } = require('otplib');
+const otplib = require('otplib');
 const { sendVerificationEmail } = require('../services/emailService');
 const asyncHandler = require('../utils/asyncHandler');
+
+const TRUSTED_DEVICE_DAYS = 30;
+
+const parseUserAgent = (ua) => {
+  if (!ua) return 'Unknown Device';
+  let browser = 'Unknown Browser';
+  let os = 'Unknown OS';
+  if (ua.includes('Edg/')) browser = 'Edge';
+  else if (ua.includes('Chrome/')) browser = 'Chrome';
+  else if (ua.includes('Firefox/')) browser = 'Firefox';
+  else if (ua.includes('Safari/')) browser = 'Safari';
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac OS')) os = 'macOS';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  return `${browser} on ${os}`;
+};
 
 const register = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
@@ -62,6 +81,35 @@ const login = asyncHandler(async (req, res) => {
   }
 
   if (user.twoFactorEnabled && user.twoFactorSecret) {
+    const trustedCookie = req.cookies?.trustedDevice;
+    if (trustedCookie) {
+      const deviceHash = crypto.createHash('sha256').update(trustedCookie).digest('hex');
+      const trustedDevice = await TrustedDevice.findOne({
+        user: user._id,
+        deviceToken: deviceHash,
+        expiresAt: { $gt: new Date() }
+      });
+      if (trustedDevice) {
+        trustedDevice.lastUsedAt = new Date();
+        await trustedDevice.save();
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        return res.status(200).json({
+          token,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            bio: user.bio,
+            profilePicture: user.profilePicture,
+            isVerified: user.isVerified,
+            isEmailVerified: user.isEmailVerified,
+            role: user.role
+          },
+          trustedDevice: true
+        });
+      }
+    }
+
     const tempToken = jwt.sign(
       { id: user._id, twoFactorPending: true },
       process.env.JWT_SECRET,
@@ -91,7 +139,7 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const verifyTwoFactor = asyncHandler(async (req, res) => {
-  const { tempToken, code, useBackupCode } = req.body;
+  const { tempToken, code, useBackupCode, rememberDevice } = req.body;
 
   let decoded;
   try {
@@ -122,7 +170,7 @@ const verifyTwoFactor = asyncHandler(async (req, res) => {
     await user.save();
   } else {
     try {
-      const isValid = authenticator.verify({
+      const isValid = otplib.verify({
         token: code.trim(),
         secret: user.twoFactorSecret
       });
@@ -132,6 +180,29 @@ const verifyTwoFactor = asyncHandler(async (req, res) => {
     } catch (err) {
       return res.status(400).json({ message: 'Invalid verification code' });
     }
+  }
+
+  if (rememberDevice) {
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const deviceHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const deviceName = parseUserAgent(req.headers['user-agent']);
+    const expiresAt = new Date(Date.now() + TRUSTED_DEVICE_DAYS * 24 * 60 * 60 * 1000);
+
+    await TrustedDevice.create({
+      user: user._id,
+      deviceToken: deviceHash,
+      deviceName,
+      userAgent: req.headers['user-agent'] || '',
+      expiresAt
+    });
+
+    res.cookie('trustedDevice', rawToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: TRUSTED_DEVICE_DAYS * 24 * 60 * 60 * 1000,
+      path: '/'
+    });
   }
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });

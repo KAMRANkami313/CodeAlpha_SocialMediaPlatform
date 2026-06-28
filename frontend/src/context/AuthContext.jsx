@@ -36,8 +36,8 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  const completeTwoFactorLogin = async (tempToken, code, useBackupCode = false) => {
-    const response = await authService.verifyTwoFactor(tempToken, code, useBackupCode);
+  const completeTwoFactorLogin = async (tempToken, code, useBackupCode = false, rememberDevice = false) => {
+    const response = await authService.verifyTwoFactor(tempToken, code, useBackupCode, rememberDevice);
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('user', JSON.stringify(response.data.user));
     setUser(response.data.user);

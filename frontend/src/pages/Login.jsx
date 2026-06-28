@@ -13,6 +13,7 @@ const Login = () => {
   const [tempToken, setTempToken] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(true);
   const { loginUser, completeTwoFactorLogin } = useContext(AuthContext);
   const navigate = useNavigate();
   const twoFactorInputRef = useRef(null);
@@ -47,7 +48,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      await completeTwoFactorLogin(tempToken, twoFactorCode, useBackupCode);
+      await completeTwoFactorLogin(tempToken, twoFactorCode, useBackupCode, rememberDevice);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid verification code');
@@ -100,6 +101,14 @@ const Login = () => {
                   autoComplete="one-time-code"
                 />
               </div>
+              <label className="remember-device-checkbox">
+                <input
+                  type="checkbox"
+                  checked={rememberDevice}
+                  onChange={(e) => setRememberDevice(e.target.checked)}
+                />
+                <span>Remember this device for 30 days</span>
+              </label>
               <button type="submit" className="btn auth-submit-btn" disabled={loading || !twoFactorCode}>
                 {loading ? <Loader2 size={16} className="spin" /> : <ShieldCheck size={16} />}
                 {loading ? 'Verifying…' : 'Verify & Log In'}

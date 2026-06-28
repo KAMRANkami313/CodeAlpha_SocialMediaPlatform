@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const http = require('http');
 const env = require('./config/env');
 const connectDB = require('./config/db');
@@ -40,6 +41,8 @@ app.use(cors({
   origin: corsOrigin,
   credentials: true
 }));
+
+app.use(cookieParser());
 
 app.use(express.json({ limit: '10mb' }));
 
