@@ -10,6 +10,7 @@ import RouteLoader from './components/common/RouteLoader';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 import PWAUpdatePrompt from './components/common/PWAUpdatePrompt';
+import SocketStatus from './components/common/SocketStatus';
 import AdminRoute from './components/admin/AdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -36,6 +37,7 @@ const AppContent = () => {
       <EmailVerificationBanner />
       <PWAInstallPrompt />
       <PWAUpdatePrompt />
+      <SocketStatus />
       <main id="main-content">
         <ErrorBoundary>
         <Suspense fallback={<RouteLoader />}>

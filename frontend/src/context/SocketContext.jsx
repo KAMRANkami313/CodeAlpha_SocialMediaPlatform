@@ -10,6 +10,8 @@ export const SocketProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [isConnected, setIsConnected] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -18,11 +20,45 @@ export const SocketProvider = ({ children }) => {
       if (token) {
         const newSocket = io(SOCKET_URL, {
           auth: { token },
-          transports: ['websocket', 'polling']
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: Infinity,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          timeout: 20000
         });
 
         newSocket.on('connect', () => {
           console.log('Socket connected');
+          setIsConnected(true);
+          setIsReconnecting(false);
+        });
+
+        newSocket.on('disconnect', () => {
+          console.log('Socket disconnected');
+          setIsConnected(false);
+        });
+
+        newSocket.on('connect_error', (err) => {
+          console.error('Socket connection error:', err.message);
+          setIsConnected(false);
+          setIsReconnecting(true);
+        });
+
+        newSocket.on('reconnect_attempt', (attempt) => {
+          console.log(`Reconnection attempt ${attempt}...`);
+          setIsReconnecting(true);
+        });
+
+        newSocket.on('reconnect', () => {
+          console.log('Socket reconnected');
+          setIsConnected(true);
+          setIsReconnecting(false);
+        });
+
+        newSocket.on('reconnect_failed', () => {
+          console.error('Socket reconnection failed');
+          setIsReconnecting(false);
         });
 
         newSocket.on('user_online', (userId) => {
@@ -45,6 +81,8 @@ export const SocketProvider = ({ children }) => {
         socketRef.current.disconnect();
         socketRef.current = null;
         setSocket(null);
+        setIsConnected(false);
+        setIsReconnecting(false);
       }
     }
 
@@ -57,7 +95,7 @@ export const SocketProvider = ({ children }) => {
   }, [user]);
 
   return (
-    <SocketContext.Provider value={{ socket, onlineUsers }}>
+    <SocketContext.Provider value={{ socket, onlineUsers, isConnected, isReconnecting }}>
       {children}
     </SocketContext.Provider>
   );

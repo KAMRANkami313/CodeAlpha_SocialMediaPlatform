@@ -70,6 +70,19 @@ app.use(cookieParser());
 
 app.use(express.json({ limit: '10mb' }));
 
+app.get('/ping', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    name: 'SocialApp API',
+    status: 'running',
+    version: '1.0.0',
+    docs: '/api/posts, /api/users, /api/messages'
+  });
+});
+
 app.use('/api', apiLimiter);
 
 app.use('/api/users', userRoutes);
@@ -95,8 +108,10 @@ app.use(errorHandler);
 const io = initSocket(server, allowedOrigins);
 app.set('io', io);
 
-server.listen(env.PORT, () => {
-  console.log(`Server running on port ${env.PORT}`);
+const PORT = env.PORT || process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
   startScheduler();
 });
 
