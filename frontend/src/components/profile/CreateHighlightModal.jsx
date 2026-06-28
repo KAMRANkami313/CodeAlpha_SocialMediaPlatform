@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import Modal from '../common/Modal';
+import ImageCropperModal from '../common/ImageCropperModal';
 import { storyService } from '../../services/storyService';
 import { uploadService } from '../../services/uploadService';
-import { ImagePlus, Loader2 } from 'lucide-react';
+import { ImagePlus, Loader2, AlertCircle } from 'lucide-react';
 
 const CreateHighlightModal = ({ onClose, onCreated }) => {
   const [title, setTitle] = useState('');
@@ -11,15 +12,23 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [cropperSrc, setCropperSrc] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropperSrc(url);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleCropComplete = async (croppedUrl, croppedBlob) => {
+    setCropperSrc(null);
     setUploading(true);
-    setError('');
-    setPreview(URL.createObjectURL(file));
+    setPreview(croppedUrl);
     try {
+      const file = new File([croppedBlob], 'cropped.jpg', { type: 'image/jpeg' });
       const res = await uploadService.uploadImage(file);
       setImage(res.data.imageUrl);
     } catch (err) {
@@ -30,6 +39,10 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleCropCancel = () => {
+    setCropperSrc(null);
   };
 
   const handleSubmit = async (e) => {
@@ -58,6 +71,7 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
     setImage('');
     setPreview('');
     setError('');
+    setCropperSrc(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     onClose();
   };
@@ -68,7 +82,12 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
         {preview && (
           <div className="highlight-preview-wrapper">
             <img src={preview} alt="Highlight preview" className="highlight-preview-img" />
-            {uploading && <div className="highlight-preview-uploading">Uploading…</div>}
+            {uploading && (
+              <div className="highlight-preview-uploading">
+                <Loader2 size={20} className="spin" />
+                <span>Uploading…</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -106,7 +125,12 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
           <span className="highlight-char-count">{title.length}/30</span>
         </div>
 
-        {error && <div className="highlight-error">{error}</div>}
+        {error && (
+          <div className="highlight-error">
+            <AlertCircle size={14} />
+            {error}
+          </div>
+        )}
 
         <div className="highlight-actions">
           <button
@@ -122,6 +146,7 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
             className="btn"
             disabled={uploading || submitting || !image}
           >
+            {submitting ? <Loader2 size={14} className="spin" /> : null}
             {submitting ? 'Saving…' : 'Save Highlight'}
           </button>
         </div>
@@ -130,6 +155,16 @@ const CreateHighlightModal = ({ onClose, onCreated }) => {
           Highlights stay on your profile permanently. Use them to save your favorite moments beyond the 24-hour story window.
         </p>
       </form>
+
+      {cropperSrc && (
+        <ImageCropperModal
+          imageSrc={cropperSrc}
+          aspect={1}
+          title="Crop Highlight Image"
+          onCropComplete={handleCropComplete}
+          onClose={handleCropCancel}
+        />
+      )}
     </Modal>
   );
 };

@@ -3,6 +3,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { postService } from '../../services/postService';
 import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
+import ImageCropperModal from '../common/ImageCropperModal';
 import { ImagePlus, X, Loader2, Send, FileText, Calendar, Clock } from 'lucide-react';
 
 const CreatePostForm = ({ onPostCreated }) => {
@@ -15,6 +16,7 @@ const CreatePostForm = ({ onPostCreated }) => {
   const [scheduledAt, setScheduledAt] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [statusType, setStatusType] = useState('success');
+  const [cropperSrc, setCropperSrc] = useState(null);
   const fileInputRef = useRef(null);
 
   const showStatus = (message, type = 'success') => {
@@ -23,20 +25,35 @@ const CreatePostForm = ({ onPostCreated }) => {
     setTimeout(() => setStatusMessage(''), 3500);
   };
 
-  const handleFileSelect = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropperSrc(url);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCropComplete = async (croppedUrl, croppedBlob) => {
+    setCropperSrc(null);
     setUploading(true);
-    setImagePreview(URL.createObjectURL(file));
+    setImagePreview(croppedUrl);
     try {
+      const file = new File([croppedBlob], 'cropped.jpg', { type: 'image/jpeg' });
       const res = await uploadService.uploadImage(file);
       setImage(res.data.imageUrl);
     } catch (error) {
       console.error(error);
       setImagePreview('');
+      showStatus('Failed to upload image', 'error');
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleCropCancel = () => {
+    setCropperSrc(null);
   };
 
   const handleRemoveImage = () => {
@@ -219,6 +236,16 @@ const CreatePostForm = ({ onPostCreated }) => {
           </button>
         </div>
       </form>
+
+      {cropperSrc && (
+        <ImageCropperModal
+          imageSrc={cropperSrc}
+          aspect={4 / 3}
+          title="Crop Post Image"
+          onCropComplete={handleCropComplete}
+          onClose={handleCropCancel}
+        />
+      )}
     </div>
   );
 };

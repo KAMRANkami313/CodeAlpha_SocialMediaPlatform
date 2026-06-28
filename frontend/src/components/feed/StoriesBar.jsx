@@ -4,7 +4,8 @@ import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
 import VerifiedBadge from '../common/VerifiedBadge';
 import Modal from '../common/Modal';
-import { Plus, ImagePlus, Loader2 } from 'lucide-react';
+import ImageCropperModal from '../common/ImageCropperModal';
+import { Plus, ImagePlus, Loader2, X } from 'lucide-react';
 
 const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
   const [storyCreateModal, setStoryCreateModal] = useState(false);
@@ -12,14 +13,23 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
   const [storyText, setStoryText] = useState('');
   const [imagePreview, setImagePreview] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [cropperSrc, setCropperSrc] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropperSrc(url);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleCropComplete = async (croppedUrl, croppedBlob) => {
+    setCropperSrc(null);
     setUploading(true);
-    setImagePreview(URL.createObjectURL(file));
+    setImagePreview(croppedUrl);
     try {
+      const file = new File([croppedBlob], 'cropped.jpg', { type: 'image/jpeg' });
       const res = await uploadService.uploadImage(file);
       setStoryImg(res.data.imageUrl);
     } catch (error) {
@@ -28,6 +38,10 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleCropCancel = () => {
+    setCropperSrc(null);
   };
 
   const handleCreateStory = async (e) => {
@@ -51,6 +65,7 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
     setStoryImg('');
     setStoryText('');
     setImagePreview('');
+    setCropperSrc(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -92,6 +107,17 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
             {imagePreview && (
               <div className="image-preview-container" style={{ marginBottom: 'var(--space-4)' }}>
                 <img src={imagePreview} alt="Preview" className="image-preview" style={{ maxHeight: '200px' }} />
+                <button
+                  type="button"
+                  className="image-preview-remove"
+                  onClick={() => {
+                    setImagePreview('');
+                    setStoryImg('');
+                  }}
+                  aria-label="Remove image"
+                >
+                  <X size={16} />
+                </button>
                 {uploading && (
                   <div className="image-preview-uploading">
                     <Loader2 size={20} className="spin" />
@@ -129,6 +155,16 @@ const StoriesBar = ({ user, stories, onStoryCreated, onStoryClick }) => {
             <button type="submit" className="btn" disabled={uploading || !storyImg}>Share to Story</button>
           </form>
         </Modal>
+      )}
+
+      {cropperSrc && (
+        <ImageCropperModal
+          imageSrc={cropperSrc}
+          aspect={9 / 16}
+          title="Crop Story Image"
+          onCropComplete={handleCropComplete}
+          onClose={handleCropCancel}
+        />
       )}
     </>
   );

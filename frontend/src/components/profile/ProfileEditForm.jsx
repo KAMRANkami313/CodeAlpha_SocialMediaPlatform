@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { userService } from '../../services/userService';
 import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
+import ImageCropperModal from '../common/ImageCropperModal';
 import { Camera, Loader2, AlertCircle } from 'lucide-react';
 
 const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpdated }) => {
@@ -12,13 +13,22 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
   const [isVerifiedInput, setIsVerifiedInput] = useState(initialProfile.isVerified);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [cropperSrc, setCropperSrc] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCropperSrc(url);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleCropComplete = async (croppedUrl, croppedBlob) => {
+    setCropperSrc(null);
     setUploading(true);
     try {
+      const file = new File([croppedBlob], 'cropped.jpg', { type: 'image/jpeg' });
       const res = await uploadService.uploadImage(file);
       setProfilePicInput(res.data.imageUrl);
     } catch (error) {
@@ -26,6 +36,10 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleCropCancel = () => {
+    setCropperSrc(null);
   };
 
   const handleUpdateProfile = async (e) => {
@@ -132,6 +146,16 @@ const ProfileEditForm = ({ initialProfile, savedPosts, setUser, onCancel, onUpda
         <button type="submit" className="btn profile-edit-save" disabled={uploading}>Save Changes</button>
         <button type="button" className="btn profile-edit-cancel" onClick={onCancel}>Cancel</button>
       </div>
+
+      {cropperSrc && (
+        <ImageCropperModal
+          imageSrc={cropperSrc}
+          aspect={1}
+          title="Crop Profile Picture"
+          onCropComplete={handleCropComplete}
+          onClose={handleCropCancel}
+        />
+      )}
     </form>
   );
 };
