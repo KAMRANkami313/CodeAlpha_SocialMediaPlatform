@@ -1,9 +1,12 @@
 import API from './api';
 
 export const notificationService = {
-  getNotifications: () =>
-    API.get('/notifications'),
+  getNotifications: (params = {}) =>
+    API.get('/notifications', { params }),
 
   markAsRead: () =>
-    API.put('/notifications/read')
+    API.put('/notifications/read'),
+
+  markSingleAsRead: (notificationId) =>
+    API.put(`/notifications/${notificationId}/read`)
 };

@@ -25,7 +25,7 @@ import {
 const Navbar = () => {
   const { user, logoutUser } = useContext(AuthContext);
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { notifications, fetchNotifications } = useNotifications(user);
+  const { notifications, fetchNotifications, markAsRead, markSingleAsRead } = useNotifications(user);
   const unreadMessages = useUnreadMessages(user);
   useActivityHeartbeat(user);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -67,6 +67,8 @@ const Navbar = () => {
             <NotificationDropdown
               notifications={notifications}
               fetchNotifications={fetchNotifications}
+              markAsRead={markAsRead}
+              markSingleAsRead={markSingleAsRead}
             />
             <Link to={`/profile/${user.id}`} className="navbar-link-with-icon" aria-label="Profile">
               <User size={18} />
@@ -131,6 +133,8 @@ const Navbar = () => {
               <NotificationDropdown
                 notifications={notifications}
                 fetchNotifications={fetchNotifications}
+                markAsRead={markAsRead}
+                markSingleAsRead={markSingleAsRead}
                 mobile
               />
               <Link to={`/profile/${user.id}`} className="navbar-mobile-link">
