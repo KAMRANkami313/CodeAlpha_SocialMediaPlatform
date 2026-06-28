@@ -4,10 +4,18 @@ const jwt = require('jsonwebtoken');
 const onlineUsers = new Map();
 let ioInstance = null;
 
-const initSocket = (server, corsOrigin) => {
+const initSocket = (server, allowedOrigins) => {
+  const origins = Array.isArray(allowedOrigins) ? allowedOrigins : [allowedOrigins];
+
   const io = new Server(server, {
     cors: {
-      origin: corsOrigin,
+      origin: (origin, callback) => {
+        if (!origin || origins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by Socket.io CORS`));
+        }
+      },
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       credentials: true
     }

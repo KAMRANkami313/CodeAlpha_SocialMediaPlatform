@@ -30,7 +30,33 @@ const { apiLimiter } = require('./middlewares/rateLimiter');
 const app = express();
 const server = http.createServer(app);
 
-const corsOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:4173'
+];
+
+if (process.env.FRONTEND_URL && !allowedOrigins.includes(process.env.FRONTEND_URL)) {
+  const frontendUrl = process.env.FRONTEND_URL.replace(/\/$/, '');
+  allowedOrigins.push(frontendUrl);
+}
+
+if (process.env.VERCEL_URL) {
+  const vercelUrl = `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`;
+  allowedOrigins.push(vercelUrl);
+}
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    }
+  },
+  credentials: true
+};
 
 connectDB();
 
@@ -38,10 +64,7 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
-app.use(cors({
-  origin: corsOrigin,
-  credentials: true
-}));
+app.use(cors(corsOptions));
 
 app.use(cookieParser());
 
@@ -69,7 +92,7 @@ app.use('/api/activity-log', activityLogRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-const io = initSocket(server, corsOrigin);
+const io = initSocket(server, allowedOrigins);
 app.set('io', io);
 
 server.listen(env.PORT, () => {

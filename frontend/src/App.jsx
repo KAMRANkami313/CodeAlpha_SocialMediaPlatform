@@ -8,6 +8,7 @@ import Navbar from './components/navbar/Navbar';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
 import RouteLoader from './components/common/RouteLoader';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import PWAInstallPrompt from './components/common/PWAInstallPrompt';
 import AdminRoute from './components/admin/AdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -32,6 +33,7 @@ const AppContent = () => {
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <Navbar />
       <EmailVerificationBanner />
+      <PWAInstallPrompt />
       <main id="main-content">
         <ErrorBoundary>
         <Suspense fallback={<RouteLoader />}>

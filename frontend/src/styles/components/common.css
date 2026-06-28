@@ -859,3 +859,128 @@
     max-width: 100%;
   }
 }
+
+.pwa-install-prompt {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  width: calc(100% - var(--space-6));
+  max-width: 440px;
+  animation: pwaSlideUp var(--transition-spring);
+}
+
+@keyframes pwaSlideUp {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.pwa-install-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+}
+
+.pwa-install-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--accent-gradient);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.pwa-install-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pwa-install-text strong {
+  font-size: var(--text-sm);
+  color: var(--text-color);
+}
+
+.pwa-install-text span {
+  font-size: var(--text-xs);
+  color: var(--secondary-text);
+  line-height: 1.4;
+}
+
+.pwa-install-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.pwa-install-btn {
+  background: var(--accent-gradient);
+  color: #ffffff;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+  font-family: inherit;
+}
+
+.pwa-install-btn:hover {
+  opacity: 0.9;
+}
+
+.pwa-dismiss-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--bg-subtle);
+  border: none;
+  color: var(--secondary-text);
+  cursor: pointer;
+  border-radius: 50%;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.pwa-dismiss-btn:hover {
+  background: var(--hover-bg);
+  color: var(--text-color);
+}
+
+@media (max-width: 480px) {
+  .pwa-install-prompt {
+    bottom: var(--space-3);
+    width: calc(100% - var(--space-4));
+  }
+
+  .pwa-install-text span {
+    display: none;
+  }
+
+  .pwa-install-content {
+    padding: var(--space-2) var(--space-3);
+  }
+}
