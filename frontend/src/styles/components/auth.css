@@ -752,3 +752,179 @@ input[type="text"]::-ms-clear {
   border-color: var(--danger);
   color: #ffffff;
 }
+
+.activity-log-section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+}
+
+.activity-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-1);
+}
+
+.activity-log-header strong {
+  font-size: var(--text-sm);
+  color: var(--text-color);
+}
+
+.refresh-activity-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--secondary-text);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.refresh-activity-btn:hover:not(:disabled) {
+  background: var(--hover-bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.refresh-activity-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.activity-log-help {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin: 0 0 var(--space-3) 0;
+  line-height: 1.5;
+}
+
+.activity-log-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  font-size: var(--text-sm);
+  color: var(--secondary-text);
+}
+
+.activity-log-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4) 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.activity-log-empty svg {
+  opacity: 0.4;
+}
+
+.activity-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activity-log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.activity-log-icon {
+  color: var(--secondary-text);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.activity-log-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.activity-log-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.activity-log-device {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-log-time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.activity-log-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.activity-log-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.activity-log-method.password {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+}
+
+.activity-log-method.two_factor {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.activity-log-method.trusted_device {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+}
+
+.activity-log-method.register {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+
+.activity-log-ip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: monospace;
+}

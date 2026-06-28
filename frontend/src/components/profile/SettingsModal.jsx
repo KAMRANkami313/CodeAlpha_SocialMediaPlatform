@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../common/Modal';
 import { authService } from '../../services/authService';
-import { KeyRound, Trash2, AlertTriangle, CheckCircle2, ShieldCheck, ShieldAlert, Loader2, Smartphone, Monitor, X } from 'lucide-react';
+import { KeyRound, Trash2, AlertTriangle, CheckCircle2, ShieldCheck, ShieldAlert, Loader2, Smartphone, Monitor, X, Clock, Globe, Shield } from 'lucide-react';
 
 const SettingsModal = ({ onClose, onAccountDeleted }) => {
   const [activeSection, setActiveSection] = useState('password');
@@ -17,6 +17,8 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
   const [twoFactorLoading, setTwoFactorLoading] = useState(true);
   const [trustedDevices, setTrustedDevices] = useState([]);
   const [devicesLoading, setDevicesLoading] = useState(false);
+  const [activities, setActivities] = useState([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
   const navigate = useNavigate();
 
   const fetchTrustedDevices = useCallback(async () => {
@@ -28,6 +30,18 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
       console.error(err);
     } finally {
       setDevicesLoading(false);
+    }
+  }, []);
+
+  const fetchActivities = useCallback(async () => {
+    setActivitiesLoading(true);
+    try {
+      const res = await authService.getActivityLog();
+      setActivities(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActivitiesLoading(false);
     }
   }, []);
 
@@ -107,6 +121,36 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
     return <Monitor size={16} />;
   };
 
+  const formatActivityTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const getLoginMethodLabel = (method) => {
+    if (method === 'password') return 'Password';
+    if (method === 'two_factor') return '2FA Code';
+    if (method === 'trusted_device') return 'Trusted Device';
+    if (method === 'register') return 'Registration';
+    return method;
+  };
+
+  const getLoginMethodIcon = (method) => {
+    if (method === 'password') return <KeyRound size={12} />;
+    if (method === 'two_factor') return <Shield size={12} />;
+    if (method === 'trusted_device') return <ShieldCheck size={12} />;
+    if (method === 'register') return <Monitor size={12} />;
+    return <Clock size={12} />;
+  };
+
   return (
     <Modal title="Settings" onClose={onClose}>
       <div className="settings-tabs">
@@ -119,7 +163,12 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
         </button>
         <button
           className={`settings-tab ${activeSection === 'security' ? 'active' : ''}`}
-          onClick={() => setActiveSection('security')}
+          onClick={() => {
+            setActiveSection('security');
+            if (activities.length === 0 && !activitiesLoading) {
+              fetchActivities();
+            }
+          }}
         >
           <ShieldCheck size={14} />
           Security
@@ -258,6 +307,57 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
               )}
             </div>
           )}
+
+          <div className="activity-log-section">
+            <div className="activity-log-header">
+              <strong>Recent Activity</strong>
+              <button className="refresh-activity-btn" onClick={fetchActivities} disabled={activitiesLoading}>
+                {activitiesLoading ? <Loader2 size={13} className="spin" /> : 'Refresh'}
+              </button>
+            </div>
+            <p className="activity-log-help">
+              Recent logins to your account. If you see activity you don't recognize, change your password immediately.
+            </p>
+            {activitiesLoading ? (
+              <div className="activity-log-loading">
+                <Loader2 size={16} className="spin" />
+                <span>Loading activity…</span>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="activity-log-empty">
+                <Clock size={20} />
+                <span>No recent activity</span>
+              </div>
+            ) : (
+              <div className="activity-log-list">
+                {activities.slice(0, 10).map((activity) => (
+                  <div key={activity._id} className="activity-log-item">
+                    <div className="activity-log-icon">
+                      {getDeviceIcon(activity.deviceName)}
+                    </div>
+                    <div className="activity-log-info">
+                      <div className="activity-log-top">
+                        <span className="activity-log-device">{activity.deviceName || 'Unknown Device'}</span>
+                        <span className="activity-log-time">{formatActivityTime(activity.timestamp)}</span>
+                      </div>
+                      <div className="activity-log-meta">
+                        <span className={`activity-log-method ${activity.loginMethod}`}>
+                          {getLoginMethodIcon(activity.loginMethod)}
+                          {getLoginMethodLabel(activity.loginMethod)}
+                        </span>
+                        {activity.ip && (
+                          <span className="activity-log-ip">
+                            <Globe size={11} />
+                            {activity.ip}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <p className="settings-security-help">
             2FA requires a verification code from an authenticator app (Google Authenticator, Authy, 1Password) each time you log in. Backup codes are provided for emergency access.

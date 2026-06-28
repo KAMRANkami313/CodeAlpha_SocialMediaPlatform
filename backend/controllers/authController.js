@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const TrustedDevice = require('../models/TrustedDevice');
+const UserActivity = require('../models/UserActivity');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -10,7 +11,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const TRUSTED_DEVICE_DAYS = 30;
 
 const parseUserAgent = (ua) => {
-  if (!ua) return 'Unknown Device';
+  if (!ua) return { deviceName: 'Unknown Device', browser: 'Unknown', os: 'Unknown' };
   let browser = 'Unknown Browser';
   let os = 'Unknown OS';
   if (ua.includes('Edg/')) browser = 'Edge';
@@ -22,7 +23,25 @@ const parseUserAgent = (ua) => {
   else if (ua.includes('Android')) os = 'Android';
   else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
   else if (ua.includes('Linux')) os = 'Linux';
-  return `${browser} on ${os}`;
+  return { deviceName: `${browser} on ${os}`, browser, os };
+};
+
+const recordActivity = async (userId, req, loginMethod) => {
+  try {
+    const ua = req.headers['user-agent'] || '';
+    const { deviceName, browser, os } = parseUserAgent(ua);
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || req.ip || '';
+    await UserActivity.create({
+      user: userId,
+      ip,
+      deviceName,
+      browser,
+      os,
+      loginMethod
+    });
+  } catch (err) {
+    console.error('Failed to record activity:', err.message);
+  }
 };
 
 const register = asyncHandler(async (req, res) => {
@@ -53,6 +72,8 @@ const register = asyncHandler(async (req, res) => {
   } catch (err) {
     console.error('Failed to send verification email:', err.message);
   }
+
+  await recordActivity(newUser._id, req, 'register');
 
   const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.status(201).json({
@@ -92,6 +113,7 @@ const login = asyncHandler(async (req, res) => {
       if (trustedDevice) {
         trustedDevice.lastUsedAt = new Date();
         await trustedDevice.save();
+        await recordActivity(user._id, req, 'trusted_device');
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         return res.status(200).json({
           token,
@@ -121,6 +143,8 @@ const login = asyncHandler(async (req, res) => {
       message: 'Two-factor authentication required'
     });
   }
+
+  await recordActivity(user._id, req, 'password');
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.status(200).json({
@@ -185,7 +209,7 @@ const verifyTwoFactor = asyncHandler(async (req, res) => {
   if (rememberDevice) {
     const rawToken = crypto.randomBytes(32).toString('hex');
     const deviceHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    const deviceName = parseUserAgent(req.headers['user-agent']);
+    const { deviceName } = parseUserAgent(req.headers['user-agent']);
     const expiresAt = new Date(Date.now() + TRUSTED_DEVICE_DAYS * 24 * 60 * 60 * 1000);
 
     await TrustedDevice.create({
@@ -204,6 +228,8 @@ const verifyTwoFactor = asyncHandler(async (req, res) => {
       path: '/'
     });
   }
+
+  await recordActivity(user._id, req, 'two_factor');
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.status(200).json({

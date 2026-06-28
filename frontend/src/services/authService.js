@@ -35,5 +35,8 @@ export const authService = {
     API.delete(`/2fa/devices/${deviceId}`),
 
   revokeAllTrustedDevices: () =>
-    API.delete('/2fa/devices')
+    API.delete('/2fa/devices'),
+
+  getActivityLog: () =>
+    API.get('/activity-log')
 };

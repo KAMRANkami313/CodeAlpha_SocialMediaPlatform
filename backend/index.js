@@ -22,6 +22,7 @@ const verificationRoutes = require('./routes/verificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
 const twoFactorRoutes = require('./routes/twoFactorRoutes');
+const activityLogRoutes = require('./routes/activityLogRoutes');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { apiLimiter } = require('./middlewares/rateLimiter');
@@ -63,6 +64,7 @@ app.use('/api/verification', verificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/2fa', twoFactorRoutes);
+app.use('/api/activity-log', activityLogRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
