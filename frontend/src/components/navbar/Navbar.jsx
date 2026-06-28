@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
 import useNotifications from '../../hooks/useNotifications';
@@ -29,8 +29,15 @@ const Navbar = () => {
   const unreadMessages = useUnreadMessages(user);
   useActivityHeartbeat(user);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const handleLogout = () => {
+    logoutUser();
+    closeMobileMenu();
+    navigate('/login');
+  };
 
   return (
     <nav className="navbar">
@@ -74,7 +81,7 @@ const Navbar = () => {
             <button onClick={toggleTheme} className="navbar-icon-btn" aria-label="Toggle theme">
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
-            <button onClick={logoutUser} className="navbar-icon-btn" aria-label="Log out">
+            <button onClick={handleLogout} className="navbar-icon-btn" aria-label="Log out">
               <LogOut size={18} />
             </button>
           </>
@@ -140,7 +147,7 @@ const Navbar = () => {
                 {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
                 <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
               </button>
-              <button onClick={logoutUser} className="navbar-mobile-link navbar-mobile-danger">
+              <button onClick={handleLogout} className="navbar-mobile-link navbar-mobile-danger">
                 <LogOut size={18} />
                 <span>Log Out</span>
               </button>

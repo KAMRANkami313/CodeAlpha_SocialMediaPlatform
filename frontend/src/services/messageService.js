@@ -17,5 +17,14 @@ export const messageService = {
     API.post(`/messages/${messageId}/react`, { emoji }),
 
   deleteMessage: (messageId) =>
-    API.delete(`/messages/${messageId}`)
+    API.delete(`/messages/${messageId}`),
+
+  getMessageRequests: () =>
+    API.get('/messages/requests'),
+
+  acceptMessageRequest: (requestId) =>
+    API.post(`/messages/requests/${requestId}/accept`),
+
+  declineMessageRequest: (requestId) =>
+    API.post(`/messages/requests/${requestId}/decline`)
 };

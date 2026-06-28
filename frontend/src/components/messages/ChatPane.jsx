@@ -12,12 +12,14 @@ import {
   ExternalLink,
   Loader2,
   CheckCheck,
-  MessageSquare
+  MessageSquare,
+  Clock
 } from 'lucide-react';
 
 const REACTIONS = ['❤️', '😂', '👍', '😮', '😢', '🙏'];
 
 const isImageURL = (url) => {
+  if (!url || typeof url !== 'string') return false;
   return (
     url.match(/\.(jpeg|jpg|gif|png|webp)$/) != null ||
     url.startsWith('http://localhost:5000/uploads/') ||
@@ -30,6 +32,7 @@ const isImageURL = (url) => {
 const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
 
 const linkify = (text) => {
+  if (!text || typeof text !== 'string') return <span>{text}</span>;
   const parts = text.split(URL_PATTERN);
   return parts.map((part, i) => {
     if (part && part.match(URL_PATTERN)) {
@@ -69,7 +72,9 @@ const ChatPane = ({
   onMessageSent,
   onMessageDeleted,
   onMessageReacted,
-  isPartnerOnline
+  isPartnerOnline,
+  isRequestMode,
+  requestPendingMessage
 }) => {
   const { socket } = useContext(SocketContext);
   const [text, setText] = useState('');
@@ -155,7 +160,9 @@ const ChatPane = ({
         socket.emit('typing', { receiver: activePartner._id, isTyping: false });
       }
       const res = await messageService.sendMessage(activePartner._id, text);
-      onMessageSent(res.data);
+      if (res.data && !res.data.isRequest && res.data._id) {
+        onMessageSent(res.data);
+      }
       setText('');
       setPartnerRead(false);
     } catch (err) {
@@ -171,7 +178,9 @@ const ChatPane = ({
       const uploadRes = await uploadService.uploadImage(file);
       const imageUrl = uploadRes.data.imageUrl;
       const res = await messageService.sendMessage(activePartner._id, imageUrl);
-      onMessageSent(res.data);
+      if (res.data && !res.data.isRequest && res.data._id) {
+        onMessageSent(res.data);
+      }
       setPartnerRead(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
@@ -309,6 +318,14 @@ const ChatPane = ({
               </div>
             );
           })}
+
+          {isRequestMode && requestPendingMessage && (
+            <div className="chat-request-notice">
+              <Clock size={14} />
+              <span>Your message has been sent as a request. {activePartner.username} needs to accept it before you can chat.</span>
+            </div>
+          )}
+
           {isTyping && (
             <div className="chat-bubble theirs typing-indicator">
               <span></span>
@@ -330,6 +347,7 @@ const ChatPane = ({
           )}
           <div ref={messagesEndRef} />
         </div>
+
         <form className="chat-form" onSubmit={handleSendMessage}>
           <input
             ref={fileInputRef}

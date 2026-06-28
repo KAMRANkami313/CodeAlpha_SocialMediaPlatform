@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { userService } from '../services/userService';
 import { postService } from '../services/postService';
@@ -124,7 +124,7 @@ const Profile = () => {
     }
   };
 
-  if (!user) return null;
+  if (!user) return <Navigate to="/login" replace />;
   if (!profile) {
     return (
       <div className="container" style={{ maxWidth: '1024px' }}>
@@ -197,7 +197,7 @@ const Profile = () => {
           ))}
           {isMe && highlights.length === 0 && (
             <div className="highlights-empty">
-              Tap "New" to save your first story highlight. Highlights stay on your profile permanently.
+              Tap “New” to save your first story highlight. Highlights stay on your profile permanently.
             </div>
           )}
         </div>
@@ -303,7 +303,7 @@ const Profile = () => {
                 </button>
               </div>
             )}
-     </div>
+          </div>
         ))}
       </div>
 
@@ -327,7 +327,7 @@ const Profile = () => {
             aria-label="Close"
           >
             <X size={22} />
-          </button>          
+          </button>
           <div className="highlight-viewer-content" onClick={(e) => e.stopPropagation()}>
             {activeHighlight.image ? (
               <img src={activeHighlight.image} alt={activeHighlight.title} className="highlight-viewer-img" />

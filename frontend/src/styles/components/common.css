@@ -594,3 +594,95 @@
     animation: none;
   }
 }
+
+.error-boundary-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: var(--space-6);
+}
+
+.error-boundary-content {
+  max-width: 480px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.error-boundary-icon {
+  color: var(--danger);
+  animation: errorPulse 2s ease-in-out infinite;
+}
+
+@keyframes errorPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
+}
+
+.error-boundary-content h1 {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.error-boundary-content p {
+  font-size: var(--text-sm);
+  color: var(--secondary-text);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.error-boundary-details {
+  width: 100%;
+  text-align: left;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--secondary-text);
+}
+
+.error-boundary-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.error-boundary-details pre {
+  margin: var(--space-2) 0 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: monospace;
+  font-size: var(--text-xs);
+}
+
+.error-boundary-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.error-boundary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: auto;
+  padding: var(--space-3) var(--space-5);
+}
+
+.error-boundary-btn.secondary {
+  background: var(--bg-subtle);
+  color: var(--text-color);
+}

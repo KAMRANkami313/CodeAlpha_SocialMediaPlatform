@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext, useCallback, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { SocketContext } from '../context/SocketContext';
 import { messageService } from '../services/messageService';
 import ConversationList from '../components/messages/ConversationList';
 import ChatPane from '../components/messages/ChatPane';
+import MessageRequests from '../components/messages/MessageRequests';
 import { PanelLeftClose, PanelLeftOpen, Check, Loader2, AlertCircle } from 'lucide-react';
 
 const MOBILE_BREAKPOINT = 768;
@@ -20,6 +21,9 @@ const Messages = () => {
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth >= MOBILE_BREAKPOINT : true
   );
+  const [activeTab, setActiveTab] = useState('all');
+  const [requests, setRequests] = useState([]);
+  const [requestPendingMessage, setRequestPendingMessage] = useState(false);
   const sharedPostSentRef = useRef(false);
 
   const fetchConversations = useCallback(async () => {
@@ -39,6 +43,15 @@ const Messages = () => {
     }
   }, [location.state]);
 
+  const fetchRequests = useCallback(async () => {
+    try {
+      const res = await messageService.getMessageRequests();
+      setRequests(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
   const fetchMessages = useCallback(async () => {
     if (!activePartner) return;
     try {
@@ -51,6 +64,7 @@ const Messages = () => {
 
   useEffect(() => {
     fetchConversations();
+    fetchRequests();
     const startWith = location.state?.startChatWith;
     if (startWith) {
       setActivePartner(startWith);
@@ -58,7 +72,7 @@ const Messages = () => {
         setSidebarOpen(false);
       }
     }
-  }, [location.state, fetchConversations]);
+  }, [location.state, fetchConversations, fetchRequests]);
 
   useEffect(() => {
     fetchMessages();
@@ -98,17 +112,34 @@ const Messages = () => {
       ));
     };
 
+    const handleNewRequest = () => {
+      fetchRequests();
+    };
+
+    const handleRequestAccepted = (data) => {
+      fetchConversations();
+      if (data.receiverId) {
+        messageService.getProfile(data.receiverId).then(res => {
+          setActivePartner(res.data);
+        }).catch(() => {});
+      }
+    };
+
     socket.on('receive_message', handleReceiveMessage);
     socket.on('message_deleted', handleMessageDeleted);
     socket.on('message_reaction', handleMessageReaction);
+    socket.on('new_message_request', handleNewRequest);
+    socket.on('request_accepted', handleRequestAccepted);
 
     return () => {
       socket.emit('leave_conversation', activePartner._id);
       socket.off('receive_message', handleReceiveMessage);
       socket.off('message_deleted', handleMessageDeleted);
       socket.off('message_reaction', handleMessageReaction);
+      socket.off('new_message_request', handleNewRequest);
+      socket.off('request_accepted', handleRequestAccepted);
     };
-  }, [socket, activePartner, user, fetchConversations]);
+  }, [socket, activePartner, user, fetchConversations, fetchRequests]);
 
   const handleMessageSent = (newMessage) => {
     setMessages(prev => {
@@ -129,6 +160,34 @@ const Messages = () => {
     ));
   };
 
+  const handleAcceptRequest = async (requestId) => {
+    try {
+      const res = await messageService.acceptMessageRequest(requestId);
+      setRequests(prev => prev.filter(r => r._id !== requestId));
+      fetchConversations();
+      const newMessage = res.data.messageData;
+      if (newMessage) {
+        const partner = requests.find(r => r._id === requestId)?.sender;
+        if (partner) {
+          setActivePartner(partner);
+          setMessages([newMessage]);
+          setSidebarOpen(false);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeclineRequest = async (requestId) => {
+    try {
+      await messageService.declineMessageRequest(requestId);
+      setRequests(prev => prev.filter(r => r._id !== requestId));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     const sharedPostId = location.state?.sharedPostId;
     if (!sharedPostId || !activePartner || sharedPostSentRef.current) return;
@@ -142,8 +201,15 @@ const Messages = () => {
     (async () => {
       try {
         const res = await messageService.sendMessage(activePartner._id, text);
-        handleMessageSent(res.data);
-        setShareStatus('sent');
+        if (res.data && !res.data.isRequest && res.data._id) {
+          handleMessageSent(res.data);
+          setShareStatus('sent');
+        } else if (res.data && res.data.isRequest) {
+          setShareStatus('sent');
+          setRequestPendingMessage(true);
+        } else {
+          setShareStatus('sent');
+        }
         setTimeout(() => setShareStatus(null), 2500);
       } catch (err) {
         console.error(err);
@@ -157,14 +223,16 @@ const Messages = () => {
 
   const handleSelectPartner = (partner) => {
     setActivePartner(partner);
+    setRequestPendingMessage(false);
     if (typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT) {
       setSidebarOpen(false);
     }
   };
 
-  if (!user) return null;
+  if (!user) return <Navigate to="/login" replace />;
 
   const isPartnerOnline = activePartner && onlineUsers && onlineUsers.has(activePartner._id);
+  const requestCount = requests.length;
 
   return (
     <div className="container" style={{ maxWidth: '935px' }}>
@@ -181,7 +249,16 @@ const Messages = () => {
           activePartner={activePartner}
           onSelectPartner={handleSelectPartner}
           onlineUsers={onlineUsers}
-        />
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          requestCount={requestCount}
+        >
+          <MessageRequests
+            requests={requests}
+            onAccept={handleAcceptRequest}
+            onDecline={handleDeclineRequest}
+          />
+        </ConversationList>
         <div className="chat-pane-wrapper">
           <div className="chat-toolbar">
             <button
@@ -204,6 +281,8 @@ const Messages = () => {
             onMessageDeleted={handleMessageDeleted}
             onMessageReacted={handleMessageReacted}
             isPartnerOnline={isPartnerOnline}
+            isRequestMode={requestPendingMessage}
+            requestPendingMessage={requestPendingMessage}
           />
         </div>
       </div>

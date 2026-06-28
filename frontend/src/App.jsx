@@ -7,6 +7,7 @@ import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/navbar/Navbar';
 import EmailVerificationBanner from './components/common/EmailVerificationBanner';
 import RouteLoader from './components/common/RouteLoader';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import AdminRoute from './components/admin/AdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -31,6 +32,7 @@ const AppContent = () => {
       <Navbar />
       <EmailVerificationBanner />
       <main id="main-content">
+        <ErrorBoundary>
         <Suspense fallback={<RouteLoader />}>
           <Routes>
             <Route path="/" element={<Feed />} />
@@ -57,6 +59,7 @@ const AppContent = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
+        </ErrorBoundary>
       </main>
     </Router>
   );
