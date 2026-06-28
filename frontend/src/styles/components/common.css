@@ -991,6 +991,14 @@
   right: var(--space-4);
   z-index: 9001;
   max-width: 380px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
   animation: pwaUpdateSlideIn var(--transition-spring);
 }
 
@@ -1003,17 +1011,6 @@
     transform: translateX(0);
     opacity: 1;
   }
-}
-
-.pwa-update-prompt {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-elevated);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
 }
 
 .pwa-update-icon {

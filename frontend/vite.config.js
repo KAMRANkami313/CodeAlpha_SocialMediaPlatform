@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg', 'robots.txt', 'site.webmanifest'],
       manifest: {
         name: 'SocialApp — Connect & Share',
         short_name: 'SocialApp',
@@ -38,9 +38,18 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,txt,webmanifest}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api/, /^\/socket\.io/, /^\/uploads/],
+        navigateFallbackDenylist: [
+          /^\/api/,
+          /^\/socket\.io/,
+          /^\/uploads/,
+          /^\/robots\.txt$/,
+          /^\/site\.webmanifest$/,
+          /^\/manifest\.webmanifest$/,
+          /^\/sw\.js/,
+          /^\/workbox-/
+        ],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,

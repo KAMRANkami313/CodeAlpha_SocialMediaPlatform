@@ -1,73 +1,52 @@
-import { useState, useEffect } from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw, X, CheckCircle2 } from 'lucide-react';
 
 const PWAUpdatePrompt = () => {
-  const [showUpdate, setShowUpdate] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState(null);
-
-  useEffect(() => {
-    const handleControllerChange = () => {
-      window.location.reload();
-    };
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-
-      const checkForUpdate = async () => {
-        const registration = await navigator.serviceWorker.getRegistration();
-        if (registration) {
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  setWaitingWorker(newWorker);
-                  setShowUpdate(true);
-                }
-              });
-            }
-          });
-        }
-      };
-
-      checkForUpdate();
-
-      const interval = setInterval(checkForUpdate, 60000);
-
-      return () => {
-        navigator.serviceWorker.removeEventListener('controllerChange', handleControllerChange);
-        clearInterval(interval);
-      };
-    }
-  }, []);
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    offlineReady: [offlineReady, setOfflineReady],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegisteredSW(url) {
+      console.log('Service Worker registered:', url);
+    },
+    onRegisterError(error) {
+      console.error('SW registration error:', error);
+    },
+  });
 
   const handleUpdate = () => {
-    if (waitingWorker) {
-      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-    }
-    setShowUpdate(false);
+    updateServiceWorker(true);
   };
 
-  const handleDismiss = () => {
-    setShowUpdate(false);
+  const handleClose = () => {
+    setNeedRefresh(false);
+    setOfflineReady(false);
   };
 
-  if (!showUpdate) return null;
+  if (!needRefresh && !offlineReady) return null;
 
   return (
     <div className="pwa-update-prompt">
       <div className="pwa-update-icon">
-        <RefreshCw size={18} />
+        {needRefresh ? <RefreshCw size={18} /> : <CheckCircle2 size={18} />}
       </div>
       <div className="pwa-update-text">
-        <strong>New version available</strong>
-        <span>Refresh to get the latest features and fixes.</span>
+        <strong>{needRefresh ? 'New version available' : 'App ready to work offline'}</strong>
+        <span>
+          {needRefresh
+            ? 'Refresh to get the latest features and fixes.'
+            : 'Your app is now cached for offline use.'
+          }
+        </span>
       </div>
       <div className="pwa-update-actions">
-        <button className="pwa-update-btn" onClick={handleUpdate}>
-          Update Now
-        </button>
-        <button className="pwa-dismiss-btn" onClick={handleDismiss} aria-label="Dismiss update">
+        {needRefresh ? (
+          <button className="pwa-update-btn" onClick={handleUpdate}>
+            Update Now
+          </button>
+        ) : null}
+        <button className="pwa-dismiss-btn" onClick={handleClose} aria-label="Dismiss">
           <X size={16} />
         </button>
       </div>
