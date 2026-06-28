@@ -9,6 +9,7 @@ import EmailVerificationBanner from './components/common/EmailVerificationBanner
 import RouteLoader from './components/common/RouteLoader';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PWAInstallPrompt from './components/common/PWAInstallPrompt';
+import PWAUpdatePrompt from './components/common/PWAUpdatePrompt';
 import AdminRoute from './components/admin/AdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -34,6 +35,7 @@ const AppContent = () => {
       <Navbar />
       <EmailVerificationBanner />
       <PWAInstallPrompt />
+      <PWAUpdatePrompt />
       <main id="main-content">
         <ErrorBoundary>
         <Suspense fallback={<RouteLoader />}>

@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/sw.js", "destination": "/sw.js" },
+    { "source": "/workbox-((?:[a-f0-9]+))\\.js", "destination": "/workbox-$1.js" },
+    { "source": "/manifest.webmanifest", "destination": "/manifest.webmanifest" },
+    { "source": "/((?!api|socket\\.io|sw\\.js|workbox-|manifest\\.webmanifest).*)", "destination": "/" }
   ]
 }

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /messages/
+Disallow: /setup-2fa/
+
+Sitemap: https://socialapp.example.com/sitemap.xml
