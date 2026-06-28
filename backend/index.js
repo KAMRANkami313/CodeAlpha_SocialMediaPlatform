@@ -19,6 +19,8 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
 const verificationRoutes = require('./routes/verificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const authRoutes = require('./routes/authRoutes');
+const twoFactorRoutes = require('./routes/twoFactorRoutes');
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
 const { apiLimiter } = require('./middlewares/rateLimiter');
@@ -56,6 +58,8 @@ app.use('/api/uploads', uploadRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/verification', verificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/2fa', twoFactorRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

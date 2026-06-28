@@ -2,6 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { authenticator } = require('otplib');
 const { sendVerificationEmail } = require('../services/emailService');
 const asyncHandler = require('../utils/asyncHandler');
 
@@ -59,6 +60,80 @@ const login = asyncHandler(async (req, res) => {
   if (user.isSuspended) {
     return res.status(403).json({ message: 'Your account has been suspended. Please contact support if you believe this is an error.' });
   }
+
+  if (user.twoFactorEnabled && user.twoFactorSecret) {
+    const tempToken = jwt.sign(
+      { id: user._id, twoFactorPending: true },
+      process.env.JWT_SECRET,
+      { expiresIn: '10m' }
+    );
+    return res.status(200).json({
+      requiresTwoFactor: true,
+      tempToken,
+      message: 'Two-factor authentication required'
+    });
+  }
+
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  res.status(200).json({
+    token,
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      bio: user.bio,
+      profilePicture: user.profilePicture,
+      isVerified: user.isVerified,
+      isEmailVerified: user.isEmailVerified,
+      role: user.role
+    }
+  });
+});
+
+const verifyTwoFactor = asyncHandler(async (req, res) => {
+  const { tempToken, code, useBackupCode } = req.body;
+
+  let decoded;
+  try {
+    decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+  } catch (err) {
+    return res.status(401).json({ message: 'Two-factor session expired. Please log in again.' });
+  }
+
+  if (!decoded.twoFactorPending) {
+    return res.status(400).json({ message: 'Invalid two-factor session' });
+  }
+
+  const user = await User.findById(decoded.id);
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+    return res.status(400).json({ message: 'Two-factor authentication is not enabled' });
+  }
+
+  if (useBackupCode) {
+    const codeHash = crypto.createHash('sha256').update(code.trim()).digest('hex');
+    const index = user.twoFactorBackupCodes.indexOf(codeHash);
+    if (index === -1) {
+      return res.status(400).json({ message: 'Invalid or already used backup code' });
+    }
+    user.twoFactorBackupCodes.splice(index, 1);
+    await user.save();
+  } else {
+    try {
+      const isValid = authenticator.verify({
+        token: code.trim(),
+        secret: user.twoFactorSecret
+      });
+      if (!isValid) {
+        return res.status(400).json({ message: 'Invalid verification code' });
+      }
+    } catch (err) {
+      return res.status(400).json({ message: 'Invalid verification code' });
+    }
+  }
+
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
   res.status(200).json({
     token,
@@ -120,6 +195,7 @@ const resendVerification = asyncHandler(async (req, res) => {
 module.exports = {
   register,
   login,
+  verifyTwoFactor,
   changePassword,
   resendVerification
 };
