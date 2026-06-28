@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import API from '../services/api';
+import { authService } from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -26,6 +27,17 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = async (email, password) => {
     const response = await API.post('/users/login', { email, password });
+    if (response.data.requiresTwoFactor) {
+      return response.data;
+    }
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    setUser(response.data.user);
+    return response.data;
+  };
+
+  const completeTwoFactorLogin = async (tempToken, code, useBackupCode = false) => {
+    const response = await authService.verifyTwoFactor(tempToken, code, useBackupCode);
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('user', JSON.stringify(response.data.user));
     setUser(response.data.user);
@@ -44,7 +56,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, updateUser, loading, registerUser, loginUser, logoutUser }}>
+    <AuthContext.Provider value={{ user, setUser, updateUser, loading, registerUser, loginUser, completeTwoFactorLogin, logoutUser }}>
       {children}
     </AuthContext.Provider>
   );

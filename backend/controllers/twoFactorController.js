@@ -5,6 +5,11 @@ const { authenticator } = require('otplib');
 const QRCode = require('qrcode');
 const asyncHandler = require('../utils/asyncHandler');
 
+const otplib = require('otplib');
+
+console.log('authenticator:', otplib.authenticator);
+console.log('generateSecret:', otplib.generateSecret);
+
 const APP_NAME = process.env.TWO_FACTOR_APP_NAME || 'SocialApp';
 
 const setup = asyncHandler(async (req, res) => {

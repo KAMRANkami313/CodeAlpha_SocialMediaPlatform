@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Modal from '../common/Modal';
 import { authService } from '../../services/authService';
-import { KeyRound, Trash2, AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { KeyRound, Trash2, AlertTriangle, CheckCircle2, ShieldCheck, ShieldAlert, Loader2 } from 'lucide-react';
 
 const SettingsModal = ({ onClose, onAccountDeleted }) => {
   const [activeSection, setActiveSection] = useState('password');
@@ -12,6 +13,23 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
   const [passwordError, setPasswordError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorLoading, setTwoFactorLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkTwoFactor = async () => {
+      try {
+        const res = await authService.getTwoFactorStatus();
+        setTwoFactorEnabled(res.data.twoFactorEnabled);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setTwoFactorLoading(false);
+      }
+    };
+    checkTwoFactor();
+  }, []);
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -42,6 +60,11 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
     }
   };
 
+  const handleTwoFactorClick = () => {
+    onClose();
+    navigate('/setup-2fa');
+  };
+
   return (
     <Modal title="Settings" onClose={onClose}>
       <div className="settings-tabs">
@@ -51,6 +74,13 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
         >
           <KeyRound size={14} />
           Change Password
+        </button>
+        <button
+          className={`settings-tab ${activeSection === 'security' ? 'active' : ''}`}
+          onClick={() => setActiveSection('security')}
+        >
+          <ShieldCheck size={14} />
+          Security
         </button>
         <button
           className={`settings-tab ${activeSection === 'delete' ? 'active' : ''}`}
@@ -99,6 +129,43 @@ const SettingsModal = ({ onClose, onAccountDeleted }) => {
           </div>
           <button type="submit" className="btn">Update Password</button>
         </form>
+      )}
+
+      {activeSection === 'security' && (
+        <div className="settings-security-section">
+          <div className={`two-factor-status-card ${twoFactorEnabled ? 'enabled' : 'disabled'}`}>
+            <div className="two-factor-status-icon">
+              {twoFactorLoading ? (
+                <Loader2 size={24} className="spin" />
+              ) : twoFactorEnabled ? (
+                <ShieldCheck size={24} />
+              ) : (
+                <ShieldAlert size={24} />
+              )}
+            </div>
+            <div className="two-factor-status-body">
+              <strong>Two-Factor Authentication</strong>
+              <span>
+                {twoFactorLoading
+                  ? 'Checking status…'
+                  : twoFactorEnabled
+                    ? 'Enabled — your account is protected with an extra layer of security.'
+                    : 'Not enabled — add an extra layer of security to your account.'
+                }
+              </span>
+            </div>
+          </div>
+          <button
+            className="btn auth-submit-btn"
+            onClick={handleTwoFactorClick}
+            disabled={twoFactorLoading}
+          >
+            {twoFactorEnabled ? <><ShieldCheck size={16} /> Manage 2FA</> : <><ShieldAlert size={16} /> Enable 2FA</>}
+          </button>
+          <p className="settings-security-help">
+            2FA requires a verification code from an authenticator app (Google Authenticator, Authy, 1Password) each time you log in. Backup codes are provided for emergency access.
+          </p>
+        </div>
       )}
 
       {activeSection === 'delete' && (
