@@ -5,6 +5,7 @@ const http = require('http');
 const env = require('./config/env');
 const connectDB = require('./config/db');
 const { initSocket } = require('./config/socket');
+const { startScheduler } = require('./utils/scheduler');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
@@ -64,6 +65,7 @@ app.set('io', io);
 
 server.listen(env.PORT, () => {
   console.log(`Server running on port ${env.PORT}`);
+  startScheduler();
 });
 
 process.on('unhandledRejection', (reason) => {

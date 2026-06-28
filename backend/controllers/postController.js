@@ -5,11 +5,13 @@ const asyncHandler = require('../utils/asyncHandler');
 const PAGE_SIZE = 10;
 
 const createPost = asyncHandler(async (req, res) => {
-  const { caption, image } = req.body;
+  const { caption, image, isDraft, scheduledAt } = req.body;
   const newPost = new Post({
     user: req.user.id,
-    caption,
-    image
+    caption: caption || '',
+    image: image || '',
+    isDraft: isDraft === true,
+    scheduledAt: scheduledAt ? new Date(scheduledAt) : null
   });
   await newPost.save();
   const populatedPost = await Post.findById(newPost._id).populate('user', 'username profilePicture isVerified');
@@ -21,10 +23,15 @@ const getAllPosts = asyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || PAGE_SIZE));
   const skip = (page - 1) * limit;
+  const now = new Date();
 
-  let filter = { isArchived: { $ne: true } };
+  let filter = {
+    isArchived: { $ne: true },
+    isDraft: { $ne: true },
+    $or: [{ scheduledAt: null }, { scheduledAt: { $lte: now } }]
+  };
   if (tag) {
-    filter = { isArchived: { $ne: true }, caption: { $regex: `#${tag}`, $options: 'i' } };
+    filter.caption = { $regex: `#${tag}`, $options: 'i' };
   }
 
   const [posts, total] = await Promise.all([
@@ -43,9 +50,15 @@ const getAllPosts = asyncHandler(async (req, res) => {
 
 const getUserPosts = asyncHandler(async (req, res) => {
   const isOwner = req.user && req.user.id === req.params.userId;
+  const now = new Date();
   const filter = { user: req.params.userId };
   if (!isOwner) {
     filter.isArchived = { $ne: true };
+    filter.isDraft = { $ne: true };
+    filter.$or = [{ scheduledAt: null }, { scheduledAt: { $lte: now } }];
+  } else {
+    filter.isDraft = { $ne: true };
+    filter.$or = [{ scheduledAt: null }, { scheduledAt: { $lte: now } }];
   }
   const posts = await findPostsPopulated(filter).sort({ createdAt: -1 });
   res.status(200).json(posts);
@@ -120,6 +133,57 @@ const getArchivedPosts = asyncHandler(async (req, res) => {
   res.status(200).json(posts);
 });
 
+const getDrafts = asyncHandler(async (req, res) => {
+  const posts = await Post.find({
+    user: req.user.id,
+    isDraft: true
+  })
+    .populate('user', 'username profilePicture isVerified')
+    .sort({ updatedAt: -1 });
+  res.status(200).json(posts);
+});
+
+const getScheduledPosts = asyncHandler(async (req, res) => {
+  const now = new Date();
+  const posts = await Post.find({
+    user: req.user.id,
+    isDraft: false,
+    scheduledAt: { $ne: null, $gt: now }
+  })
+    .populate('user', 'username profilePicture isVerified')
+    .sort({ scheduledAt: 1 });
+  res.status(200).json(posts);
+});
+
+const publishDraft = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+  if (post.user.toString() !== req.user.id) {
+    return res.status(401).json({ message: 'Unauthorized action' });
+  }
+  post.isDraft = false;
+  post.scheduledAt = null;
+  await post.save();
+  const populatedPost = await findPostByIdPopulated(post._id);
+  res.status(200).json(populatedPost);
+});
+
+const cancelSchedule = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ message: 'Post not found' });
+  }
+  if (post.user.toString() !== req.user.id) {
+    return res.status(401).json({ message: 'Unauthorized action' });
+  }
+  post.isDraft = true;
+  post.scheduledAt = null;
+  await post.save();
+  res.status(200).json({ message: 'Schedule cancelled, moved to drafts' });
+});
+
 module.exports = {
   createPost,
   getAllPosts,
@@ -129,5 +193,9 @@ module.exports = {
   updatePost,
   archivePost,
   unarchivePost,
-  getArchivedPosts
+  getArchivedPosts,
+  getDrafts,
+  getScheduledPosts,
+  publishDraft,
+  cancelSchedule
 };

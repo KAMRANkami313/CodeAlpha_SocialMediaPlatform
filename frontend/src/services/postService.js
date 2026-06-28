@@ -1,8 +1,8 @@
 import API from './api';
 
 export const postService = {
-  createPost: (caption, image) =>
-    API.post('/posts', { caption, image }),
+  createPost: (caption, image, options = {}) =>
+    API.post('/posts', { caption, image, ...options }),
 
   getAllPosts: (tag, page = 1, limit = 10) =>
     API.get('/posts', { params: { ...(tag ? { tag } : {}), page, limit } }),
@@ -15,6 +15,18 @@ export const postService = {
 
   getArchivedPosts: () =>
     API.get('/posts/archived'),
+
+  getDrafts: () =>
+    API.get('/posts/drafts'),
+
+  getScheduledPosts: () =>
+    API.get('/posts/scheduled'),
+
+  publishDraft: (postId) =>
+    API.post(`/posts/${postId}/publish`),
+
+  cancelSchedule: (postId) =>
+    API.post(`/posts/${postId}/cancel-schedule`),
 
   archivePost: (postId) =>
     API.post(`/posts/${postId}/archive`),

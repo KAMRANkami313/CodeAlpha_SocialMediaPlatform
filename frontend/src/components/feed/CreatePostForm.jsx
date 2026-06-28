@@ -3,7 +3,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { postService } from '../../services/postService';
 import { uploadService } from '../../services/uploadService';
 import Avatar from '../common/Avatar';
-import { ImagePlus, X, Loader2 } from 'lucide-react';
+import { ImagePlus, X, Loader2, Send, FileText, Calendar, Clock } from 'lucide-react';
 
 const CreatePostForm = ({ onPostCreated }) => {
   const { user } = useContext(AuthContext);
@@ -11,7 +11,17 @@ const CreatePostForm = ({ onPostCreated }) => {
   const [image, setImage] = useState('');
   const [imagePreview, setImagePreview] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [statusType, setStatusType] = useState('success');
   const fileInputRef = useRef(null);
+
+  const showStatus = (message, type = 'success') => {
+    setStatusMessage(message);
+    setStatusType(type);
+    setTimeout(() => setStatusMessage(''), 3500);
+  };
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
@@ -37,20 +47,74 @@ const CreatePostForm = ({ onPostCreated }) => {
     }
   };
 
+  const resetForm = () => {
+    setCaption('');
+    setImage('');
+    setImagePreview('');
+    setShowSchedule(false);
+    setScheduledAt('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleCreatePost = async (e) => {
     e.preventDefault();
     if (uploading) return;
+    if (!caption.trim() && !image) {
+      showStatus('Please add a caption or image', 'error');
+      return;
+    }
     try {
       await postService.createPost(caption, image);
-      setCaption('');
-      setImage('');
-      setImagePreview('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      resetForm();
       onPostCreated();
+      showStatus('Post published!');
     } catch (error) {
       console.error(error);
+      showStatus('Failed to publish post', 'error');
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (uploading) return;
+    if (!caption.trim() && !image) {
+      showStatus('Please add a caption or image to save as draft', 'error');
+      return;
+    }
+    try {
+      await postService.createPost(caption, image, { isDraft: true });
+      resetForm();
+      showStatus('Draft saved!');
+    } catch (error) {
+      console.error(error);
+      showStatus('Failed to save draft', 'error');
+    }
+  };
+
+  const handleSchedulePost = async (e) => {
+    e.preventDefault();
+    if (uploading) return;
+    if (!caption.trim() && !image) {
+      showStatus('Please add a caption or image', 'error');
+      return;
+    }
+    if (!scheduledAt) {
+      showStatus('Please select a date and time', 'error');
+      return;
+    }
+    const scheduledDate = new Date(scheduledAt);
+    if (scheduledDate <= new Date()) {
+      showStatus('Scheduled time must be in the future', 'error');
+      return;
+    }
+    try {
+      await postService.createPost(caption, image, { scheduledAt: scheduledDate.toISOString() });
+      resetForm();
+      showStatus(`Post scheduled for ${scheduledDate.toLocaleString()}`);
+    } catch (error) {
+      console.error(error);
+      showStatus('Failed to schedule post', 'error');
     }
   };
 
@@ -65,14 +129,21 @@ const CreatePostForm = ({ onPostCreated }) => {
         />
         <h3 style={{ margin: 0 }}>Create Post</h3>
       </div>
-      <form onSubmit={handleCreatePost}>
+
+      {statusMessage && (
+        <div className={`create-post-status ${statusType}`}>
+          {statusType === 'success' ? <FileText size={14} /> : <X size={14} />}
+          {statusMessage}
+        </div>
+      )}
+
+      <form onSubmit={showSchedule ? handleSchedulePost : handleCreatePost}>
         <div className="form-group">
           <textarea
             rows="3"
             placeholder="What's on your mind? Use #tags!"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            required
           />
         </div>
         {imagePreview && (
@@ -107,7 +178,46 @@ const CreatePostForm = ({ onPostCreated }) => {
             {uploading ? 'Uploading...' : 'Upload Image'}
           </button>
         </div>
-        <button type="submit" className="btn" disabled={uploading}>Post</button>
+
+        {showSchedule && (
+          <div className="schedule-input-wrapper">
+            <label className="schedule-label">
+              <Calendar size={14} />
+              Schedule for:
+            </label>
+            <input
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+              className="schedule-input"
+              min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+            />
+          </div>
+        )}
+
+        <div className="create-post-actions">
+          <button type="submit" className="btn create-post-submit" disabled={uploading}>
+            {showSchedule ? <><Clock size={16} /> Schedule Post</> : <><Send size={16} /> Post</>}
+          </button>
+          <button
+            type="button"
+            className="btn create-post-draft"
+            onClick={handleSaveDraft}
+            disabled={uploading}
+          >
+            <FileText size={16} />
+            Save Draft
+          </button>
+          <button
+            type="button"
+            className={`btn create-post-schedule-toggle ${showSchedule ? 'active' : ''}`}
+            onClick={() => setShowSchedule(!showSchedule)}
+            disabled={uploading}
+          >
+            <Calendar size={16} />
+            {showSchedule ? 'Cancel Schedule' : 'Schedule'}
+          </button>
+        </div>
       </form>
     </div>
   );

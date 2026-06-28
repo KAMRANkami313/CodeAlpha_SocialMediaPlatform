@@ -29,6 +29,14 @@ const postSchema = new mongoose.Schema({
   isArchived: {
     type: Boolean,
     default: false
+  },
+  isDraft: {
+    type: Boolean,
+    default: false
+  },
+  scheduledAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

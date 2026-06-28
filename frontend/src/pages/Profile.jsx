@@ -12,7 +12,18 @@ import EmptyState from '../components/common/EmptyState';
 import { ProfileSkeleton } from '../components/common/Skeleton';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import CreateHighlightModal from '../components/profile/CreateHighlightModal';
-import { FileText, Bookmark, Archive as ArchiveIcon, ArchiveRestore, Trash2, X, Star } from 'lucide-react';
+import {
+  FileText,
+  Bookmark,
+  Archive as ArchiveIcon,
+  Clock,
+  Send,
+  Trash2,
+  Calendar,
+  X,
+  Star,
+  ArchiveRestore
+} from 'lucide-react';
 
 const Profile = () => {
   const { id } = useParams();
@@ -21,15 +32,23 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [archivedPosts, setArchivedPosts] = useState([]);
+  const [draftPosts, setDraftPosts] = useState([]);
+  const [scheduledPosts, setScheduledPosts] = useState([]);
   const [highlights, setHighlights] = useState([]);
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('posts');
+  const [statusMessage, setStatusMessage] = useState('');
 
   const [activeLikers, setActiveLikers] = useState(null);
   const [userListModal, setUserListModal] = useState(null);
   const [userListTitle, setUserListTitle] = useState('');
   const [activeHighlight, setActiveHighlight] = useState(null);
   const [showCreateHighlight, setShowCreateHighlight] = useState(false);
+
+  const showStatus = (message) => {
+    setStatusMessage(message);
+    setTimeout(() => setStatusMessage(''), 3000);
+  };
 
   const handleHighlightCreated = async () => {
     setShowCreateHighlight(false);
@@ -47,6 +66,7 @@ const Profile = () => {
       await storyService.deleteHighlight(highlightId);
       setHighlights(prev => prev.filter(h => h._id !== highlightId));
       setActiveHighlight(null);
+      showStatus('Highlight deleted');
     } catch (err) {
       console.error(err);
     }
@@ -63,8 +83,14 @@ const Profile = () => {
       if (user && id === user.id) {
         const resArchived = await postService.getArchivedPosts().catch(() => ({ data: [] }));
         setArchivedPosts(resArchived.data || []);
+        const resDrafts = await postService.getDrafts().catch(() => ({ data: [] }));
+        setDraftPosts(resDrafts.data || []);
+        const resScheduled = await postService.getScheduledPosts().catch(() => ({ data: [] }));
+        setScheduledPosts(resScheduled.data || []);
       } else {
         setArchivedPosts([]);
+        setDraftPosts([]);
+        setScheduledPosts([]);
       }
     } catch (err) {
       console.error(err);
@@ -107,20 +133,50 @@ const Profile = () => {
     setUserListTitle(title);
   };
 
-  const handleArchiveToggle = (postId) => {
-    const toggled = posts.find(p => p._id === postId);
-    if (!toggled) return;
-    const newArchivedState = !toggled.isArchived;
-    setPosts(prev => prev.map(p => p._id === postId ? { ...p, isArchived: newArchivedState } : p));
-    if (newArchivedState) {
-      const moved = { ...toggled, isArchived: true };
-      setArchivedPosts(prev => [moved, ...prev.filter(p => p._id !== postId)]);
-      setActiveTab('archived');
-    } else {
-      const moved = { ...toggled, isArchived: false };
-      setArchivedPosts(prev => prev.filter(p => p._id !== postId));
-      setPosts(prev => [moved, ...prev.filter(p => p._id !== postId)]);
-      setActiveTab('posts');
+  const handlePublishDraft = async (postId) => {
+    try {
+      await postService.publishDraft(postId);
+      setDraftPosts(prev => prev.filter(p => p._id !== postId));
+      fetchProfile();
+      showStatus('Draft published!');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handlePublishScheduled = async (postId) => {
+    try {
+      await postService.publishDraft(postId);
+      setScheduledPosts(prev => prev.filter(p => p._id !== postId));
+      fetchProfile();
+      showStatus('Post published!');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCancelSchedule = async (postId) => {
+    try {
+      await postService.cancelSchedule(postId);
+      const moved = scheduledPosts.find(p => p._id === postId);
+      setScheduledPosts(prev => prev.filter(p => p._id !== postId));
+      if (moved) {
+        setDraftPosts(prev => [{ ...moved, isDraft: true, scheduledAt: null }, ...prev]);
+      }
+      showStatus('Moved to drafts');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteDraft = async (postId) => {
+    if (!window.confirm('Delete this draft permanently?')) return;
+    try {
+      await postService.deletePost(postId);
+      setDraftPosts(prev => prev.filter(p => p._id !== postId));
+      showStatus('Draft deleted');
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -137,18 +193,18 @@ const Profile = () => {
   const isFollowing = profile.followers.some(f => f._id === user?.id);
 
   let displayedPosts;
-  if (activeTab === 'posts') displayedPosts = posts.filter(p => !p.isArchived);
-  else if (activeTab === 'saved') {
-    const seen = new Set();
-    displayedPosts = (profile.savedPosts || []).filter((p) => {
-      if (seen.has(p._id)) return false;
-      seen.add(p._id);
-      return true;
-    });
-  } else if (activeTab === 'archived') displayedPosts = archivedPosts;
+  if (activeTab === 'posts') displayedPosts = posts;
+  else if (activeTab === 'saved') displayedPosts = profile.savedPosts || [];
+  else if (activeTab === 'archived') displayedPosts = archivedPosts;
 
   return (
     <div className="container" style={{ maxWidth: '1024px' }}>
+      {statusMessage && (
+        <div className="profile-status-toast">
+          {statusMessage}
+        </div>
+      )}
+
       <ProfileHeader
         profile={profile}
         posts={posts}
@@ -197,7 +253,7 @@ const Profile = () => {
           ))}
           {isMe && highlights.length === 0 && (
             <div className="highlights-empty">
-              Tap “New” to save your first story highlight. Highlights stay on your profile permanently.
+              Tap "New" to save your first story highlight. Highlights stay on your profile permanently.
             </div>
           )}
         </div>
@@ -210,6 +266,15 @@ const Profile = () => {
             onClick={() => setActiveTab('posts')}
           >
             My Posts
+          </button>
+          <button
+            className={`profile-tab ${activeTab === 'drafts' ? 'active' : ''}`}
+            onClick={() => setActiveTab('drafts')}
+          >
+            Drafts
+            {(draftPosts.length + scheduledPosts.length) > 0 && (
+              <span className="profile-tab-count">{draftPosts.length + scheduledPosts.length}</span>
+            )}
           </button>
           <button
             className={`profile-tab ${activeTab === 'saved' ? 'active' : ''}`}
@@ -229,83 +294,145 @@ const Profile = () => {
         </div>
       )}
 
-      <div className="profile-posts-grid">
-        {displayedPosts.length === 0 && (
-          <EmptyState
-            icon={
-              activeTab === 'saved' ? <Bookmark size={48} />
-              : activeTab === 'archived' ? <ArchiveIcon size={48} />
-              : <FileText size={48} />
-            }
-            title={
-              activeTab === 'saved' ? 'No saved posts'
-              : activeTab === 'archived' ? 'No archived posts'
-              : 'No posts yet'
-            }
-            message={
-              activeTab === 'saved' ? 'Posts you save will appear here.'
-              : activeTab === 'archived' ? 'Posts you archive will appear here. They stay hidden from your feed and profile.'
-              : 'When this user shares posts, they will appear here.'
-            }
-          />
-        )}
-        {displayedPosts.map((post, index) => (
-          <div className={`post-card ${post.isArchived ? 'post-card-archived' : ''}`} key={`${activeTab}-${post._id}-${index}`}>
-            <div className="post-header">
-              <Avatar
-                src={post.user.profilePicture}
-                alt="Avatar"
-                className="post-avatar"
-              />
-              <strong style={{ display: 'flex', alignItems: 'center' }}>
-                {post.user.username}
-                <VerifiedBadge show={post.user.isVerified} />
-              </strong>
-              {post.isArchived && (
-                <span className="archived-pill">Archived</span>
-              )}
-            </div>
-            {post.image && <img src={post.image} alt="Post content" className="post-image" />}
-            <div className="post-actions" style={{ padding: 'var(--space-3) var(--space-4) 0 var(--space-4)' }}>
-              <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
-                {post.likes.length} likes
-              </span>
-            </div>
-            <div className="post-content">
-              <p>{post.caption}</p>
-            </div>
-            {isMe && activeTab === 'archived' && (
-              <div className="archived-post-actions">
-                <button
-                  className="btn archived-restore-btn"
-                  onClick={async () => {
-                    try {
-                      await postService.unarchivePost(post._id);
-                      handleArchiveToggle(post._id);
-                    } catch (err) { console.error(err); }
-                  }}
-                >
-                  <ArchiveRestore size={14} />
-                  Restore
+      {activeTab === 'drafts' && isMe ? (
+        <div className="profile-posts-grid">
+          {scheduledPosts.length === 0 && draftPosts.length === 0 && (
+            <EmptyState
+              icon={<Clock size={48} />}
+              title="No drafts or scheduled posts"
+              message="Save a post as a draft or schedule it for later — it'll appear here."
+            />
+          )}
+          {scheduledPosts.map((post) => (
+            <div className="post-card post-card-scheduled" key={`scheduled-${post._id}`}>
+              <div className="post-header">
+                <Avatar src={post.user.profilePicture} alt="Avatar" className="post-avatar" />
+                <strong style={{ display: 'flex', alignItems: 'center' }}>
+                  {post.user.username}
+                  <VerifiedBadge show={post.user.isVerified} />
+                </strong>
+                <span className="scheduled-pill">
+                  <Calendar size={11} />
+                  {new Date(post.scheduledAt).toLocaleString()}
+                </span>
+              </div>
+              {post.image && <img src={post.image} alt="Post content" className="post-image" />}
+              <div className="post-content">
+                <p>{post.caption || '(no caption)'}</p>
+              </div>
+              <div className="draft-post-actions">
+                <button className="btn draft-publish-btn" onClick={() => handlePublishScheduled(post._id)}>
+                  <Send size={14} />
+                  Publish Now
                 </button>
-                <button
-                  className="btn settings-danger-btn archived-delete-btn"
-                  onClick={async () => {
-                    if (!window.confirm('Permanently delete this post?')) return;
-                    try {
-                      await postService.deletePost(post._id);
-                      setArchivedPosts(prev => prev.filter(p => p._id !== post._id));
-                    } catch (err) { console.error(err); }
-                  }}
-                >
+                <button className="btn draft-cancel-btn" onClick={() => handleCancelSchedule(post._id)}>
+                  <ArchiveRestore size={14} />
+                  Move to Drafts
+                </button>
+              </div>
+            </div>
+          ))}
+          {draftPosts.map((post) => (
+            <div className="post-card post-card-draft" key={`draft-${post._id}`}>
+              <div className="post-header">
+                <Avatar src={post.user.profilePicture} alt="Avatar" className="post-avatar" />
+                <strong style={{ display: 'flex', alignItems: 'center' }}>
+                  {post.user.username}
+                  <VerifiedBadge show={post.user.isVerified} />
+                </strong>
+                <span className="draft-pill">Draft</span>
+              </div>
+              {post.image && <img src={post.image} alt="Post content" className="post-image" />}
+              <div className="post-content">
+                <p>{post.caption || '(no caption)'}</p>
+              </div>
+              <div className="draft-post-actions">
+                <button className="btn draft-publish-btn" onClick={() => handlePublishDraft(post._id)}>
+                  <Send size={14} />
+                  Publish
+                </button>
+                <button className="btn draft-delete-btn" onClick={() => handleDeleteDraft(post._id)}>
                   <Trash2 size={14} />
                   Delete
                 </button>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="profile-posts-grid">
+          {displayedPosts.length === 0 && (
+            <EmptyState
+              icon={
+                activeTab === 'saved' ? <Bookmark size={48} />
+                : activeTab === 'archived' ? <ArchiveIcon size={48} />
+                : <FileText size={48} />
+              }
+              title={
+                activeTab === 'saved' ? 'No saved posts'
+                : activeTab === 'archived' ? 'No archived posts'
+                : 'No posts yet'
+              }
+              message={
+                activeTab === 'saved' ? 'Posts you save will appear here.'
+                : activeTab === 'archived' ? 'Posts you archive will appear here. They stay hidden from your feed and profile.'
+                : 'When this user shares posts, they will appear here.'
+              }
+            />
+          )}
+          {displayedPosts.map((post, index) => (
+            <div className="post-card" key={`${activeTab}-${post._id}-${index}`}>
+              <div className="post-header">
+                <Avatar src={post.user.profilePicture} alt="Avatar" className="post-avatar" />
+                <strong style={{ display: 'flex', alignItems: 'center' }}>
+                  {post.user.username}
+                  <VerifiedBadge show={post.user.isVerified} />
+                </strong>
+                {post.isArchived && <span className="archived-pill">Archived</span>}
+              </div>
+              {post.image && <img src={post.image} alt="Post content" className="post-image" />}
+              <div className="post-actions" style={{ padding: 'var(--space-3) var(--space-4) 0 var(--space-4)' }}>
+                <span className="likes-trigger" onClick={() => setActiveLikers(post.likes)}>
+                  {post.likes.length} likes
+                </span>
+              </div>
+              <div className="post-content">
+                <p>{post.caption}</p>
+              </div>
+              {isMe && activeTab === 'archived' && (
+                <div className="archived-post-actions">
+                  <button
+                    className="btn archived-restore-btn"
+                    onClick={async () => {
+                      try {
+                        await postService.unarchivePost(post._id);
+                        setArchivedPosts(prev => prev.filter(p => p._id !== post._id));
+                        fetchProfile();
+                      } catch (err) { console.error(err); }
+                    }}
+                  >
+                    <ArchiveRestore size={14} />
+                    Restore
+                  </button>
+                  <button
+                    className="btn settings-danger-btn archived-delete-btn"
+                    onClick={async () => {
+                      if (!window.confirm('Permanently delete this post?')) return;
+                      try {
+                        await postService.deletePost(post._id);
+                        setArchivedPosts(prev => prev.filter(p => p._id !== post._id));
+                      } catch (err) { console.error(err); }
+                    }}
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {activeLikers && (
         <LikersModal likers={activeLikers} onClose={() => setActiveLikers(null)} />
