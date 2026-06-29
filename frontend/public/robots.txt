@@ -1,8 +1,12 @@
 User-agent: *
 Allow: /
+Allow: /login
+Allow: /register
+Disallow: /explore
+Disallow: /messages
+Disallow: /admin
+Disallow: /setup-2fa
 Disallow: /api/
-Disallow: /admin/
-Disallow: /messages/
-Disallow: /setup-2fa/
 
-Sitemap: https://socialapp.example.com/sitemap.xml
+# Sitemap
+Sitemap: https://social-media-platform-gray.vercel.app/sitemap.xml

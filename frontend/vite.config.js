@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'robots.txt', 'site.webmanifest'],
+      includeAssets: ['favicon.svg', 'robots.txt', 'site.webmanifest', 'sitemap.xml'],
       manifest: {
         name: 'SocialApp — Connect & Share',
         short_name: 'SocialApp',
@@ -38,7 +38,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,txt,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2,txt,webmanifest,xml}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [
           /^\/api/,
@@ -47,6 +47,7 @@ export default defineConfig({
           /^\/robots\.txt$/,
           /^\/site\.webmanifest$/,
           /^\/manifest\.webmanifest$/,
+          /^\/sitemap\.xml$/,
           /^\/sw\.js/,
           /^\/workbox-/
         ],
